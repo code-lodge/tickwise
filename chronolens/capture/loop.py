@@ -135,11 +135,15 @@ class CaptureLoop:
         self.last_window = window
 
         screenshot = self._safe_capture()
+        from chronolens.capture import browser_bridge
+
+        browser_ctx = browser_bridge.latest()
+        url_for_change = browser_ctx.url if browser_ctx and browser_ctx.url else ""
         result = detect_change(
             screenshot,
             window.title,
             window.process_name,
-            url="",
+            url=url_for_change,
             state=self._state,
             phash_threshold=self._phash_threshold,
         )

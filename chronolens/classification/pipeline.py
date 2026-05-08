@@ -199,7 +199,10 @@ class ClassificationPipeline:
 
     def process_job(self, job: ClassificationJob) -> ClassificationResult | None:
         """Run the full pipeline for one job. Returns the result or None on skip."""
+        from chronolens.capture import browser_bridge
+
         engine = RedactionEngine(self._privacy_level, custom_rules=load_active_rules())
+        browser_bridge.set_redaction_engine(engine)
         title_red = engine.redact(job.window_title).redacted_text
         ocr_red = engine.redact(job.raw_ocr_text).redacted_text
 
@@ -241,10 +244,15 @@ class ClassificationPipeline:
             _update_activity(job.activity_id, redacted_text=ocr_red, source="pending_classification")
             return None
 
+        from chronolens.capture import browser_bridge
+
+        url_red, browser_title_red, _ = browser_bridge.latest_redacted()
         context = ClassificationContext(
             process_name=job.process_name,
             redacted_title=title_red,
             redacted_ocr_text=ocr_red,
+            redacted_url=url_red,
+            redacted_browser_title=browser_title_red,
         )
         user_prompt = build_user_prompt(
             context,
