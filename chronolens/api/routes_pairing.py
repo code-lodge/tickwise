@@ -52,11 +52,7 @@ async def start_pairing(payload: PairRequest) -> PairResponse:
     base = (payload.base_url or "").rstrip("/")
     if not base:
         cf = get_connection().execute("SELECT hostname, is_active FROM cloudflare_config WHERE id = 1").fetchone()
-        base = (
-            f"https://{cf['hostname']}"
-            if cf and cf["is_active"] and cf["hostname"]
-            else "http://127.0.0.1:19532"
-        )
+        base = f"https://{cf['hostname']}" if cf and cf["is_active"] and cf["hostname"] else "http://127.0.0.1:19532"
     token, token_id = auth.issue_token(payload.device_name, ttl_days=payload.ttl_days)
     pairing_url = f"{base}/m/?t={token}"
     return PairResponse(
