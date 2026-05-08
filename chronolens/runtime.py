@@ -12,11 +12,13 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from chronolens.capture.loop import CaptureLoop
+    from chronolens.pomodoro.timer import PomodoroTimer
     from chronolens.sessions.tracker import SessionTracker
 
 
 _capture_loop: CaptureLoop | None = None
 _session_tracker: SessionTracker | None = None
+_pomodoro_timer: PomodoroTimer | None = None
 
 
 def set_capture_loop(loop: CaptureLoop | None) -> None:
@@ -35,3 +37,12 @@ def set_session_tracker(tracker: SessionTracker | None) -> None:
 
 def get_session_tracker() -> SessionTracker | None:
     return _session_tracker
+
+
+def set_pomodoro_timer(timer: PomodoroTimer | None) -> None:
+    global _pomodoro_timer
+    _pomodoro_timer = timer
+
+
+def get_pomodoro_timer() -> PomodoroTimer | None:
+    return _pomodoro_timer

@@ -11,7 +11,7 @@ from chronolens.db.connection import get_connection
 logger = logging.getLogger(__name__)
 
 # Current schema version — bump when adding migrations.
-SCHEMA_VERSION: int = 4
+SCHEMA_VERSION: int = 5
 
 # ─── DDL ─────────────────────────────────────────────────────────────────────
 
@@ -438,9 +438,27 @@ def _migration_004_invoicing(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_invoices_client_id ON invoices(client_id)")
 
 
+def _migration_005_pomodoro(conn: sqlite3.Connection) -> None:
+    """Phase 7 — let activities reference the active pomodoro period."""
+    _add_column_if_missing(
+        conn,
+        "activities",
+        "pomodoro_session_id",
+        "pomodoro_session_id INTEGER REFERENCES pomodoro_sessions(id) ON DELETE SET NULL",
+    )
+    _add_column_if_missing(
+        conn,
+        "sessions",
+        "pomodoro_count",
+        "pomodoro_count INTEGER NOT NULL DEFAULT 0",
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_pomodoro_sessions_started_at " "ON pomodoro_sessions(started_at)")
+
+
 _MIGRATIONS: list[tuple[int, Callable[[sqlite3.Connection], None]]] = [
     (1, _migration_001_seed_defaults),
     (2, _migration_002_add_activity_source),
     (3, _migration_003_classification_columns),
     (4, _migration_004_invoicing),
+    (5, _migration_005_pomodoro),
 ]
