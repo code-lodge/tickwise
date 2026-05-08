@@ -121,3 +121,62 @@ def get_active_window() -> WindowInfo:
         if info is not None:
             return info
     return WindowInfo(title="", process_name="", pid=None)
+
+
+def get_window_center() -> tuple[int, int] | None:
+    """Return the focused window's centre via Sway IPC or xdotool, or None."""
+    sway_sock = os.environ.get("SWAYSOCK") or os.environ.get("I3SOCK")
+    if sway_sock and shutil.which("swaymsg"):
+        try:
+            out = subprocess.run(  # noqa: S603,S607
+                ["swaymsg", "-t", "get_tree"],
+                capture_output=True,
+                text=True,
+                timeout=2.0,
+                check=False,
+            )
+            if out.returncode == 0:
+                tree = json.loads(out.stdout)
+
+                def _find_focused(node: dict[str, Any]) -> dict[str, Any] | None:
+                    if node.get("focused"):
+                        return node
+                    for child_key in ("nodes", "floating_nodes"):
+                        for child in node.get(child_key, []) or []:
+                            hit = _find_focused(child)
+                            if hit is not None:
+                                return hit
+                    return None
+
+                focused = _find_focused(tree)
+                if focused is not None:
+                    rect = focused.get("rect") or {}
+                    x = int(rect.get("x", 0)) + int(rect.get("width", 0)) // 2
+                    y = int(rect.get("y", 0)) + int(rect.get("height", 0)) // 2
+                    return (x, y)
+        except (OSError, subprocess.SubprocessError, ValueError):
+            pass
+
+    if shutil.which("xdotool"):
+        try:
+            geom = subprocess.run(  # noqa: S603,S607
+                ["xdotool", "getactivewindow", "getwindowgeometry", "--shell"],
+                capture_output=True,
+                text=True,
+                timeout=2.0,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            return None
+        if geom.returncode == 0:
+            values: dict[str, int] = {}
+            import contextlib
+
+            for line in geom.stdout.splitlines():
+                if "=" in line:
+                    k, _, v = line.partition("=")
+                    with contextlib.suppress(ValueError):
+                        values[k.strip()] = int(v.strip())
+            if "X" in values and "Y" in values and "WIDTH" in values and "HEIGHT" in values:
+                return (values["X"] + values["WIDTH"] // 2, values["Y"] + values["HEIGHT"] // 2)
+    return None

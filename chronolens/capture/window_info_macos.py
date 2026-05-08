@@ -72,3 +72,46 @@ def get_active_window() -> WindowInfo:
     pid = int(app.processIdentifier() or 0) or None
     title = _accessibility_window_title(pid) if pid else ""
     return WindowInfo(title=title, process_name=name, pid=pid)
+
+
+def get_window_center() -> tuple[int, int] | None:
+    """Return the focused window's centre via the Accessibility API, or None."""
+    app = _frontmost_app()
+    if app is None:
+        return None
+    pid = int(app.processIdentifier() or 0) or None
+    if not pid:
+        return None
+    try:
+        from ApplicationServices import (
+            AXUIElementCopyAttributeValue,
+            AXUIElementCreateApplication,
+            AXValueGetValue,
+            kAXFocusedWindowAttribute,
+            kAXPositionAttribute,
+            kAXSizeAttribute,
+            kAXValueCGPointType,
+            kAXValueCGSizeType,
+        )
+        from CoreFoundation import CGPoint, CGSize
+    except ImportError:
+        return None
+    try:
+        ax_app = AXUIElementCreateApplication(pid)
+        err, focused = AXUIElementCopyAttributeValue(ax_app, kAXFocusedWindowAttribute, None)
+        if err or focused is None:
+            return None
+        err, pos_val = AXUIElementCopyAttributeValue(focused, kAXPositionAttribute, None)
+        err2, size_val = AXUIElementCopyAttributeValue(focused, kAXSizeAttribute, None)
+        if err or err2 or pos_val is None or size_val is None:
+            return None
+        pos = CGPoint()
+        size = CGSize()
+        if not AXValueGetValue(pos_val, kAXValueCGPointType, pos):
+            return None
+        if not AXValueGetValue(size_val, kAXValueCGSizeType, size):
+            return None
+        return (int(pos.x + size.width / 2), int(pos.y + size.height / 2))
+    except Exception:
+        logger.debug("AX position query failed", exc_info=True)
+        return None

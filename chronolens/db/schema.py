@@ -11,7 +11,7 @@ from chronolens.db.connection import get_connection
 logger = logging.getLogger(__name__)
 
 # Current schema version — bump when adding migrations.
-SCHEMA_VERSION: int = 5
+SCHEMA_VERSION: int = 6
 
 # ─── DDL ─────────────────────────────────────────────────────────────────────
 
@@ -455,10 +455,30 @@ def _migration_005_pomodoro(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_pomodoro_sessions_started_at " "ON pomodoro_sessions(started_at)")
 
 
+def _migration_006_multi_monitor(conn: sqlite3.Connection) -> None:
+    """Phase 10 — record which monitor each activity was captured from."""
+    _add_column_if_missing(
+        conn,
+        "activities",
+        "monitor_index",
+        "monitor_index INTEGER NOT NULL DEFAULT 1",
+    )
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS monitor_preferences (
+            monitor_index INTEGER PRIMARY KEY,
+            label         TEXT,
+            enabled       INTEGER NOT NULL DEFAULT 1,
+            is_primary    INTEGER NOT NULL DEFAULT 0,
+            updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+        )
+        """)
+
+
 _MIGRATIONS: list[tuple[int, Callable[[sqlite3.Connection], None]]] = [
     (1, _migration_001_seed_defaults),
     (2, _migration_002_add_activity_source),
     (3, _migration_003_classification_columns),
     (4, _migration_004_invoicing),
     (5, _migration_005_pomodoro),
+    (6, _migration_006_multi_monitor),
 ]

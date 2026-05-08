@@ -27,13 +27,22 @@ if sys.platform == "win32":
     from chronolens.capture.window_info_windows import (
         get_active_window as get_active_window,
     )
+    from chronolens.capture.window_info_windows import (
+        get_window_center as get_window_center,
+    )
 elif sys.platform == "darwin":
     from chronolens.capture.window_info_macos import (
         get_active_window as get_active_window,
     )
+    from chronolens.capture.window_info_macos import (
+        get_window_center as get_window_center,
+    )
 elif sys.platform.startswith("linux"):
     from chronolens.capture.window_info_linux import (
         get_active_window as get_active_window,
+    )
+    from chronolens.capture.window_info_linux import (
+        get_window_center as get_window_center,
     )
 else:  # pragma: no cover — exotic platform fallback
 
@@ -41,5 +50,8 @@ else:  # pragma: no cover — exotic platform fallback
         """Return an empty WindowInfo on unsupported platforms."""
         return _unsupported()
 
+    def get_window_center() -> tuple[int, int] | None:
+        return None
 
-__all__ = ["WindowInfo", "get_active_window"]
+
+__all__ = ["WindowInfo", "get_active_window", "get_window_center"]

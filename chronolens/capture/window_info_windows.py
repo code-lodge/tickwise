@@ -27,6 +27,19 @@ _user32.GetWindowTextW.restype = ctypes.c_int
 _user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
 _user32.GetWindowThreadProcessId.restype = wintypes.DWORD
 
+
+class _RECT(ctypes.Structure):
+    _fields_ = [
+        ("left", wintypes.LONG),
+        ("top", wintypes.LONG),
+        ("right", wintypes.LONG),
+        ("bottom", wintypes.LONG),
+    ]
+
+
+_user32.GetWindowRect.argtypes = [wintypes.HWND, ctypes.POINTER(_RECT)]
+_user32.GetWindowRect.restype = wintypes.BOOL
+
 _PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
 _kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
 _kernel32.OpenProcess.restype = wintypes.HANDLE
@@ -79,3 +92,18 @@ def get_active_window() -> WindowInfo:
     pid_value = int(pid.value) or None
     proc = _process_name(pid_value) if pid_value else ""
     return WindowInfo(title=title, process_name=proc, pid=pid_value)
+
+
+def get_window_center() -> tuple[int, int] | None:
+    """Return (x, y) of the focused window's centre, in virtual-screen coords.
+
+    Used by the multi-monitor router to decide which display the window
+    is currently on. Returns None when no foreground window is available.
+    """
+    hwnd = _user32.GetForegroundWindow()
+    if not hwnd:
+        return None
+    rect = _RECT()
+    if not _user32.GetWindowRect(hwnd, ctypes.byref(rect)):
+        return None
+    return ((rect.left + rect.right) // 2, (rect.top + rect.bottom) // 2)

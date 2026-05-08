@@ -59,6 +59,7 @@ module = [
     "Xlib.*",
     "winreg.*",
     "qrcode.*",
+    "CoreFoundation.*",
 ]
 ignore_missing_imports = true
 
