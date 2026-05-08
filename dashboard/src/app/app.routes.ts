@@ -22,6 +22,16 @@ export const routes: Routes = [
       import('./pages/privacy/privacy.component').then((m) => m.PrivacyPageComponent),
   },
   {
+    path: 'calendar',
+    loadComponent: () =>
+      import('./pages/calendar/calendar.component').then((m) => m.CalendarPageComponent),
+  },
+  {
+    path: 'reports',
+    loadComponent: () =>
+      import('./pages/reports/reports.component').then((m) => m.ReportsPageComponent),
+  },
+  {
     path: 'settings',
     loadComponent: () =>
       import('./pages/settings/settings.component').then((m) => m.SettingsPageComponent),

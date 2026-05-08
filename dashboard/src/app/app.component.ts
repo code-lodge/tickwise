@@ -17,6 +17,8 @@ import { ApiService } from './services/api.service';
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Live</a>
         <a routerLink="/timeline" routerLinkActive="active">Timeline</a>
         <a routerLink="/projects" routerLinkActive="active">Projects</a>
+        <a routerLink="/calendar" routerLinkActive="active">Calendar</a>
+        <a routerLink="/reports" routerLinkActive="active">Reports</a>
         <a routerLink="/privacy" routerLinkActive="active">Privacy &amp; LLM</a>
         <a routerLink="/settings" routerLinkActive="active">Settings</a>
       </nav>
