@@ -31,6 +31,17 @@ import type { Client, Project } from '../../models';
         <input [(ngModel)]="draft.currency" placeholder="USD" style="width: 4rem" />
         <button (click)="create()" [disabled]="!draft.name">Create</button>
       </div>
+      <p class="muted" style="margin:.5rem 0 .25rem 0">
+        Match keywords (one per line). Spacing, punctuation and case are
+        ignored — "Sceneryenzo" matches "scenery en zo" and
+        "scenery-enzo.com". Whichever project has the strongest match wins.
+      </p>
+      <textarea
+        [(ngModel)]="draft.match_keywords"
+        rows="3"
+        placeholder="Defaults to the project name if left blank"
+        style="width:100%; font-family: var(--mono, monospace)"
+      ></textarea>
       <p *ngIf="error()" class="error">{{ error() }}</p>
     </div>
 
@@ -41,16 +52,19 @@ import type { Client, Project } from '../../models';
             <th>Name</th>
             <th>Client</th>
             <th>Rate</th>
+            <th>Match keywords</th>
             <th>Tracked</th>
             <th>Active</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let p of projects()">
+          <ng-container *ngFor="let p of projects()">
+          <tr [class.archived]="!p.is_active">
             <td>
               <span class="badge" [style.background]="p.color">&nbsp;</span>
               <input [(ngModel)]="p.name" (change)="save(p)" />
+              <span *ngIf="!p.is_active" class="muted" style="margin-left:.4rem">(archived)</span>
             </td>
             <td>
               <select [(ngModel)]="p.client_id" (change)="save(p)">
@@ -67,27 +81,49 @@ import type { Client, Project } from '../../models';
               />
               <span class="muted">{{ p.currency }}</span>
             </td>
+            <td>
+              <textarea
+                [(ngModel)]="p.match_keywords"
+                (change)="save(p)"
+                rows="2"
+                placeholder="one keyword per line"
+                style="width: 14rem; font-family: var(--mono, monospace)"
+              ></textarea>
+            </td>
             <td>{{ formatHours(p.total_seconds) }}</td>
             <td>
               <input type="checkbox" [(ngModel)]="p.is_active" (change)="save(p)" />
             </td>
-            <td>
-              <button class="danger" (click)="archive(p)">Archive</button>
+            <td style="white-space:nowrap">
+              <button *ngIf="p.is_active" (click)="archive(p)" title="Hide from active list, keep history">
+                Archive
+              </button>
+              <button class="danger" (click)="remove(p)" title="Permanently delete — cannot be undone">
+                Delete
+              </button>
             </td>
           </tr>
+          </ng-container>
           <tr *ngIf="!projects().length">
-            <td colspan="6" class="muted">No projects yet — create one above.</td>
+            <td colspan="7" class="muted">No projects yet — create one above.</td>
           </tr>
         </tbody>
       </table>
     </div>
   `,
+  styles: [
+    `
+      tr.archived td {
+        opacity: 0.55;
+      }
+    `,
+  ],
 })
 export class ProjectsPageComponent implements OnInit {
   private api = inject(ApiService);
   projects = signal<Project[]>([]);
   clients = signal<Client[]>([]);
-  draft: Partial<Project> = { color: '#3B82F6', currency: 'USD', is_active: true };
+  draft: Partial<Project> = { color: '#3B82F6', currency: 'USD', is_active: true, match_keywords: '' };
   error = signal<string | null>(null);
 
   ngOnInit(): void {
@@ -102,7 +138,7 @@ export class ProjectsPageComponent implements OnInit {
   create(): void {
     this.api.createProject(this.draft).subscribe({
       next: () => {
-        this.draft = { color: '#3B82F6', currency: 'USD', is_active: true };
+        this.draft = { color: '#3B82F6', currency: 'USD', is_active: true, match_keywords: '' };
         this.error.set(null);
         this.reload();
       },
@@ -115,8 +151,20 @@ export class ProjectsPageComponent implements OnInit {
   }
 
   archive(p: Project): void {
-    if (!confirm(`Archive ${p.name}? It will be marked inactive.`)) return;
+    if (!confirm(`Archive ${p.name}? It will be hidden from the active list but its time history is kept.`)) return;
     this.api.deleteProject(p.id).subscribe(() => this.reload());
+  }
+
+  remove(p: Project): void {
+    const msg = `Permanently delete ${p.name}?\n\n` +
+      `This cannot be undone. Past sessions and activities will be detached and shown as "Unassigned".\n\n` +
+      `Type the project name to confirm:`;
+    const answer = prompt(msg);
+    if (answer !== p.name) {
+      if (answer !== null) alert('Name did not match — project not deleted.');
+      return;
+    }
+    this.api.deleteProject(p.id, true).subscribe(() => this.reload());
   }
 
   formatHours(secs: number): string {
