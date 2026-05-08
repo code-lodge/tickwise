@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Invoice {invoice_number}</title>
+  <style>{css}</style>
+</head>
+<body>
+  <header class="head">
+    <div class="from">
+      {logo}
+      <div class="from-text">
+        <strong>{from_name}</strong>
+        <div>{from_company}</div>
+        <div>{from_address}</div>
+        <div>{from_email}</div>
+        <div>Tax ID: {from_tax_id}</div>
+      </div>
+    </div>
+    <div class="invoice-meta">
+      <h1>Invoice</h1>
+      <table>
+        <tr><th>Number</th><td>{invoice_number}</td></tr>
+        <tr><th>Issued</th><td>{issued_date}</td></tr>
+        <tr><th>Due</th><td>{due_date}</td></tr>
+      </table>
+    </div>
+  </header>
+
+  <section class="bill-to">
+    <h2>Bill to</h2>
+    <strong>{to_name}</strong>
+    <div>{to_address}</div>
+    <div>{to_email}</div>
+    <div>{to_tax_id}</div>
+  </section>
+
+  <table class="lines">
+    <thead>
+      <tr><th>Description</th><th class="num">Hours</th><th class="num">Rate ({currency})</th><th class="num">Amount ({currency})</th></tr>
+    </thead>
+    <tbody>
+      {line_rows}
+    </tbody>
+    <tfoot>
+      <tr><td colspan="3" class="num">Subtotal</td><td class="num">{subtotal}</td></tr>
+      <tr><td colspan="3" class="num">Tax ({tax_rate}%)</td><td class="num">{tax_amount}</td></tr>
+      <tr class="grand"><td colspan="3" class="num">Total</td><td class="num">{total} {currency}</td></tr>
+    </tfoot>
+  </table>
+
+  <section class="footer">
+    <div class="notes">{notes}</div>
+    <div class="payment">
+      <strong>Payment</strong>
+      <div>IBAN: {from_iban}</div>
+      <div>{from_bank}</div>
+      <div>{payment_terms}</div>
+    </div>
+  </section>
+</body>
+</html>

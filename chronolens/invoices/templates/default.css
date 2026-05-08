@@ -1,0 +1,53 @@
+@page { size: A4; margin: 1.5cm; }
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: "Helvetica", "Arial", sans-serif;
+  color: #0f172a;
+  font-size: 11pt;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #0f172a;
+  margin-bottom: 1.5rem;
+}
+
+.from { display: flex; gap: 1rem; align-items: flex-start; }
+.logo { max-width: 96px; max-height: 96px; }
+.from-text strong { font-size: 13pt; }
+.from-text div { color: #475569; font-size: 10pt; }
+
+.invoice-meta { text-align: right; }
+.invoice-meta h1 { margin: 0 0 0.5rem 0; font-size: 28pt; color: #1e3a8a; }
+.invoice-meta table { border-collapse: collapse; margin-left: auto; }
+.invoice-meta th, .invoice-meta td { padding: 0.15rem 0.5rem; text-align: left; }
+.invoice-meta th { color: #64748b; font-weight: 500; }
+
+.bill-to { margin-bottom: 1.5rem; }
+.bill-to h2 { font-size: 11pt; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin: 0 0 0.4rem 0; }
+.bill-to strong { font-size: 12pt; }
+.bill-to div { color: #475569; font-size: 10pt; }
+
+table.lines {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+table.lines th, table.lines td { padding: 0.5rem 0.6rem; border-bottom: 1px solid #e2e8f0; }
+table.lines thead th { background: #f1f5f9; text-align: left; font-weight: 600; }
+table.lines .num { text-align: right; }
+table.lines tfoot td { border-bottom: none; padding-top: 0.4rem; }
+table.lines tfoot tr.grand td { font-weight: 700; font-size: 12pt; border-top: 2px solid #0f172a; padding-top: 0.6rem; }
+
+.footer { display: flex; justify-content: space-between; gap: 2rem; margin-top: 2rem; }
+.notes { flex: 1; color: #475569; white-space: pre-wrap; }
+.payment { flex: 0 0 240px; padding: 0.8rem 1rem; background: #f8fafc; border-left: 3px solid #1e3a8a; }
+.payment strong { display: block; margin-bottom: 0.4rem; }
+.payment div { font-size: 10pt; color: #475569; }
