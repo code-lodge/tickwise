@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ChronoLens — Options</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <h1>ChronoLens — Browser bridge</h1>
+
+  <fieldset>
+    <legend>Connection</legend>
+    <label>
+      ChronoLens host
+      <input id="host" type="text" placeholder="127.0.0.1:19532">
+    </label>
+    <button id="btn-test">Test</button>
+    <span id="test-result"></span>
+  </fieldset>
+
+  <fieldset>
+    <legend>Privacy</legend>
+    <label class="check">
+      <input id="capture-snippets" type="checkbox">
+      Send a short page-text snippet (improves classification accuracy)
+    </label>
+    <label>
+      Excluded domains (one per line — neither URL nor title is sent)
+      <textarea id="excluded" rows="6" placeholder="mail.google.com&#10;online.banking"></textarea>
+    </label>
+  </fieldset>
+
+  <div class="actions">
+    <button id="btn-save">Save</button>
+    <span id="save-result"></span>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

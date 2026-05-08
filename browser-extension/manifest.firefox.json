@@ -1,0 +1,47 @@
+{
+  "manifest_version": 2,
+  "name": "ChronoLens",
+  "version": "0.9.0",
+  "description": "Send active-tab URL and title to the local ChronoLens app for time-tracking classification.",
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "storage",
+    "http://127.0.0.1:19532/*",
+    "ws://127.0.0.1:19532/*"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "ChronoLens",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png"
+    }
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": false
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "chronolens@code-lodge.io",
+      "strict_min_version": "115.0"
+    }
+  }
+}

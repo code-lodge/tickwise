@@ -1,0 +1,40 @@
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 560px;
+  margin: 1.5rem auto;
+  padding: 0 1.25rem;
+  color: #0f172a;
+}
+h1 { font-size: 1.4rem; margin-bottom: 1rem; }
+fieldset {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.4rem;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+legend { padding: 0 0.4rem; color: #1e3a8a; font-weight: 600; }
+label { display: block; margin-bottom: 0.6rem; font-size: 0.9rem; }
+label.check { display: flex; align-items: center; gap: 0.4rem; }
+input[type="text"], textarea {
+  display: block;
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.25rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+button {
+  padding: 0.45rem 0.9rem;
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.actions { display: flex; align-items: center; gap: 0.6rem; }
+#test-result, #save-result { font-size: 0.85rem; color: #475569; }
+.ok { color: #166534; }
+.err { color: #b91c1c; }

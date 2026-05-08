@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ChronoLens</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <strong>ChronoLens</strong>
+    <span id="connection-state" class="state disconnected">offline</span>
+  </header>
+
+  <section class="last">
+    <div class="muted">Latest sent</div>
+    <div id="last-title" class="title">—</div>
+    <div id="last-url" class="url">—</div>
+  </section>
+
+  <section class="pomodoro">
+    <div class="row">
+      <span id="pomo-state" class="state idle">idle</span>
+      <span id="pomo-remaining" class="muted">—</span>
+    </div>
+    <div class="row">
+      <button id="btn-focus">Start focus</button>
+      <button id="btn-stop" class="ghost">Stop</button>
+    </div>
+  </section>
+
+  <footer>
+    <a href="#" id="open-options">Options</a>
+    <span id="error" class="error"></span>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
