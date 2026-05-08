@@ -15,7 +15,16 @@ from datetime import UTC, datetime
 from typing import Any
 
 from chronolens import runtime
+from chronolens.config import API_HOST, API_PORT
 from chronolens.sessions.tracker import today_total_seconds
+
+
+def _open_dashboard() -> None:
+    """Open the local dashboard URL in the default browser."""
+    import webbrowser
+
+    webbrowser.open(f"http://{API_HOST}:{API_PORT}/")
+
 
 try:
     import pystray
@@ -142,7 +151,7 @@ def run_tray(on_quit: Callable[[], None]) -> None:
             pystray.MenuItem(build_status_text, None, enabled=False),
             pystray.MenuItem(build_today_total_text, None, enabled=False),
             pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Open Dashboard", lambda: None),
+            pystray.MenuItem("Open Dashboard", lambda _icon, _item: _open_dashboard()),
             pystray.MenuItem(
                 lambda _item: "Resume Tracking" if _is_paused(_item) else "Pause Tracking",
                 _toggle_pause,
