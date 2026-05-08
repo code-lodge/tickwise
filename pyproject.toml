@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "chronolens"
+version = "0.1.0"
+description = "Privacy-conscious automatic time tracking for freelancers"
+requires-python = ">=3.12"
+readme = "README.md"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["chronolens*"]
+
+# ─── Black ───────────────────────────────────────────────────────────────────
+[tool.black]
+line-length = 120
+target-version = ["py312"]
+
+# ─── Ruff ────────────────────────────────────────────────────────────────────
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "PIE", "RET", "SIM", "TID"]
+ignore = ["E501"]  # line length handled by black
+
+[tool.ruff.lint.isort]
+known-first-party = ["chronolens"]
+
+# ─── Mypy ────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = false
+
+[[tool.mypy.overrides]]
+module = [
+    "mss.*",
+    "pystray.*",
+    "PIL.*",
+    "imagehash.*",
+    "paddleocr.*",
+    "paddlepaddle.*",
+    "plyer.*",
+    "caldav.*",
+    "icalendar.*",
+    "weasyprint.*",
+    "apscheduler.*",
+]
+ignore_missing_imports = true
+
+# ─── Pytest ──────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--tb=short",
+    "--strict-markers",
+    "--import-mode=importlib",
+]
+markers = [
+    "unit: fast, no I/O, no network",
+    "integration: may touch filesystem or real SQLite",
+    "e2e: full stack, requires running server",
+]
+
+# ─── Coverage ────────────────────────────────────────────────────────────────
+[tool.coverage.run]
+source = ["chronolens"]
+omit = [
+    "tests/*",
+    "chronolens/__main__.py",
+    "chronolens/tray.py",        # requires display + pystray installed
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
