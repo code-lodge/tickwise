@@ -13,40 +13,37 @@ import type {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <h1>Pomodoro</h1>
-
-    <div class="card timer" *ngIf="status() as s">
-      <div class="state-pill" [class]="s.state">{{ stateLabel(s.state) }}</div>
+    <header class="hero" *ngIf="status() as s" [attr.data-state]="s.state">
+      <div class="eyebrow">POMODORO</div>
+      <span class="cl-pill" [class.cl-pill-good]="s.state === 'idle'"
+                            [class.cl-pill-warn]="s.state === 'focus'"
+                            [class.state-break]="s.state !== 'idle' && s.state !== 'focus'">
+        <span class="cl-pill-dot"></span>
+        {{ stateLabel(s.state).toUpperCase() }}
+      </span>
       <div class="clock">{{ format(s.remaining_secs) }}</div>
-      <progress
-        *ngIf="s.duration_secs > 0"
-        max="{{ s.duration_secs }}"
-        value="{{ s.duration_secs - s.remaining_secs }}"
-        style="width: 100%"
-      ></progress>
-      <p class="muted">
+      <div class="progress-track" *ngIf="s.duration_secs > 0">
+        <div class="progress-fill" [style.width.%]="progressPct(s)"></div>
+      </div>
+      <p class="hero-sub">
         {{ s.completed_focus_count }} focus periods completed today.
       </p>
-      <div class="row">
-        <button (click)="start('focus')" *ngIf="s.state === 'idle'">Start focus</button>
-        <button (click)="start('short_break')" *ngIf="s.state === 'idle'" class="ghost">
-          Short break
-        </button>
-        <button (click)="start('long_break')" *ngIf="s.state === 'idle'" class="ghost">
-          Long break
-        </button>
-        <button (click)="stop()" *ngIf="s.state !== 'idle'">Stop</button>
+      <div class="cta-row">
+        <button class="primary" (click)="start('focus')" *ngIf="s.state === 'idle'">Start focus</button>
+        <button class="outline" (click)="start('short_break')" *ngIf="s.state === 'idle'">Short break</button>
+        <button class="outline" (click)="start('long_break')" *ngIf="s.state === 'idle'">Long break</button>
+        <button class="danger" (click)="stop()" *ngIf="s.state !== 'idle'">Stop</button>
       </div>
-    </div>
+    </header>
 
-    <details class="card" style="margin-top: 1rem">
-      <summary><strong>Settings</strong></summary>
-      <div *ngIf="settings() as cfg" class="stack" style="margin-top: 0.75rem">
-        <div class="row" style="flex-wrap: wrap">
-          <label>Work min <input type="number" [(ngModel)]="cfg.work_minutes" min="1" max="180" /></label>
-          <label>Short break <input type="number" [(ngModel)]="cfg.short_break_minutes" min="1" max="60" /></label>
-          <label>Long break <input type="number" [(ngModel)]="cfg.long_break_minutes" min="1" max="120" /></label>
-          <label>Cycles before long
+    <details class="card" style="margin-top: 1.25rem">
+      <summary>Settings</summary>
+      <div *ngIf="settings() as cfg" class="stack" style="margin-top: 0.85rem">
+        <div class="row" style="flex-wrap: wrap; gap: 1rem">
+          <label class="setting">Work min<input type="number" [(ngModel)]="cfg.work_minutes" min="1" max="180" /></label>
+          <label class="setting">Short break<input type="number" [(ngModel)]="cfg.short_break_minutes" min="1" max="60" /></label>
+          <label class="setting">Long break<input type="number" [(ngModel)]="cfg.long_break_minutes" min="1" max="120" /></label>
+          <label class="setting">Cycles before long
             <input type="number" [(ngModel)]="cfg.cycles_before_long" min="1" max="12" />
           </label>
           <label class="row" style="align-items: center; gap: 0.4rem">
@@ -59,14 +56,14 @@ import type {
       </div>
     </details>
 
-    <div class="card" style="margin-top: 1rem">
-      <h2>Recent</h2>
-      <table style="width: 100%; border-collapse: collapse">
+    <h3 class="section-h">Recent</h3>
+    <div class="card">
+      <table>
         <thead>
           <tr><th>Type</th><th>Started</th><th>Ended</th><th>Completed</th></tr>
         </thead>
         <tbody>
-          <tr *ngFor="let h of history()" style="border-top: 1px solid var(--color-border)">
+          <tr *ngFor="let h of history()">
             <td>{{ stateLabel(h.type) }}</td>
             <td>{{ h.started_at }}</td>
             <td>{{ h.ended_at }}</td>
@@ -79,13 +76,79 @@ import type {
   `,
   styles: [
     `
-      .timer { text-align: center; }
-      .clock { font-size: 4.5rem; font-variant-numeric: tabular-nums; margin: 0.5rem 0; }
-      .state-pill { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; }
-      .state-pill.idle { background: #e2e8f0; color: #475569; }
-      .state-pill.focus, .state-pill.work { background: #fee2e2; color: #991b1b; }
-      .state-pill.short_break { background: #cffafe; color: #155e75; }
-      .state-pill.long_break { background: #dbeafe; color: #1e3a8a; }
+      :host { display: block; }
+      .hero {
+        text-align: center;
+        padding: 2.5rem 2rem 2.2rem;
+        border: 1px solid var(--cl-stroke);
+        border-radius: var(--cl-radius);
+        background: linear-gradient(120deg, rgba(45, 212, 191, 0.10), rgba(56, 189, 248, 0.06));
+        box-shadow: var(--cl-shadow-sm);
+      }
+      .hero[data-state="focus"] {
+        background: linear-gradient(120deg, rgba(251, 146, 60, 0.12), rgba(239, 68, 68, 0.05));
+      }
+      .hero[data-state="short_break"], .hero[data-state="long_break"] {
+        background: linear-gradient(120deg, rgba(56, 189, 248, 0.14), rgba(45, 212, 191, 0.06));
+      }
+      .eyebrow {
+        font-family: var(--cl-font-display);
+        font-size: 0.72rem; font-weight: 700;
+        letter-spacing: 0.18em; text-transform: uppercase;
+        color: var(--cl-muted); margin-bottom: 0.6rem;
+      }
+      .clock {
+        font-family: var(--cl-font-display);
+        font-size: clamp(4rem, 12vw, 6.5rem);
+        font-weight: 700; font-variant-numeric: tabular-nums;
+        letter-spacing: -0.04em; line-height: 1;
+        margin: 1rem 0 1rem;
+        color: var(--cl-text);
+      }
+      .progress-track {
+        max-width: 420px; margin: 0 auto 1rem;
+        height: 6px; border-radius: 999px;
+        background: rgba(157, 197, 220, 0.12);
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--cl-accent), var(--cl-accent-2));
+        transition: width 1s linear;
+      }
+      .hero-sub { color: var(--cl-muted); margin: 0 0 1rem; font-size: 0.95rem; }
+      .cta-row { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+      .cta-row .primary {
+        background: linear-gradient(120deg, var(--cl-accent), var(--cl-accent-2));
+        color: #02151b;
+      }
+      .cta-row .outline {
+        background: transparent;
+        border: 1px solid var(--cl-stroke-strong);
+        color: var(--cl-text);
+      }
+      .cta-row .danger { background: var(--cl-critical); color: #fff; }
+      .state-break {
+        background: rgba(56, 189, 248, 0.12) !important;
+        border-color: rgba(56, 189, 248, 0.32) !important;
+        color: var(--cl-accent-2) !important;
+      }
+      details.card summary {
+        list-style: none; cursor: pointer; user-select: none;
+        font-family: var(--cl-font-display);
+        font-size: 0.74rem; letter-spacing: 0.18em;
+        text-transform: uppercase; color: var(--cl-muted);
+      }
+      details.card summary::-webkit-details-marker { display: none; }
+      details.card[open] summary { color: var(--cl-text); margin-bottom: 0.5rem; }
+      .setting { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; color: var(--cl-muted); }
+      .setting input { font: inherit; font-size: 0.95rem; }
+      .section-h {
+        font-family: var(--cl-font-display);
+        font-size: 0.74rem; letter-spacing: 0.18em;
+        text-transform: uppercase; color: var(--cl-muted);
+        margin: 1.5rem 0 0.75rem;
+      }
     `,
   ],
 })
@@ -154,5 +217,10 @@ export class PomodoroPageComponent implements OnInit, OnDestroy {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  progressPct(s: PomodoroStatus): number {
+    if (!s.duration_secs) return 0;
+    return Math.round(((s.duration_secs - s.remaining_secs) / s.duration_secs) * 100);
   }
 }

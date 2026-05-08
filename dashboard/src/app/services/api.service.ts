@@ -20,6 +20,14 @@ import {
   TodaySummary,
 } from '../models';
 
+export interface ReclassifyResult {
+  scanned: number;
+  matched: number;
+  unchanged: number;
+  sessions_scanned?: number;
+  sessions_matched?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private http = inject(HttpClient);
@@ -89,8 +97,8 @@ export class ApiService {
       params: hard ? { hard: 'true' } : {},
     });
   }
-  reclassifyAll(overwrite = false): Observable<{ scanned: number; matched: number; unchanged: number }> {
-    return this.http.post<{ scanned: number; matched: number; unchanged: number }>(
+  reclassifyAll(overwrite = false): Observable<ReclassifyResult> {
+    return this.http.post<ReclassifyResult>(
       `${this.base}/projects/reclassify`,
       null,
       { params: overwrite ? { overwrite: 'true' } : {} },

@@ -9,15 +9,25 @@ import type { Client, Project } from '../../models';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="row" style="justify-content: space-between; align-items: baseline; margin-bottom: 1rem">
-      <h1 style="margin: 0">Projects</h1>
-      <button class="ghost" (click)="reclassify()" [disabled]="reclassifying()">
-        {{ reclassifying() ? 'Re-classifying…' : 'Re-classify history' }}
-      </button>
-    </div>
-    <p *ngIf="reclassifyResult() as r" class="muted" style="margin: -0.5rem 0 1rem">
-      Scanned {{ r.scanned }}, matched {{ r.matched }}, unchanged {{ r.unchanged }}.
-    </p>
+    <header class="hero">
+      <div class="hero-left">
+        <div class="eyebrow">PROJECTS</div>
+        <h1>{{ projects().length }} {{ projects().length === 1 ? 'project' : 'projects' }}</h1>
+        <p class="hero-sub">
+          Each project's keywords are matched against window titles, browser
+          URLs and on-screen text. Edit a row's keywords to tag everything
+          related to that project automatically.
+        </p>
+      </div>
+      <div class="hero-right">
+        <button class="outline" (click)="reclassify()" [disabled]="reclassifying()">
+          {{ reclassifying() ? 'Re-classifying…' : 'Re-classify history' }}
+        </button>
+        <p *ngIf="reclassifyResult() as r" class="muted reclassify-summary">
+          Activities: {{ r.matched }} matched · Sessions: {{ (r.sessions_matched ?? 0) }} matched
+        </p>
+      </div>
+    </header>
 
     <div class="card" style="margin-bottom:1rem">
       <h3>New project</h3>
@@ -121,9 +131,41 @@ import type { Client, Project } from '../../models';
   `,
   styles: [
     `
-      tr.archived td {
-        opacity: 0.55;
+      :host { display: block; }
+      .hero {
+        display: flex; gap: 1.5rem; align-items: flex-start;
+        justify-content: space-between; flex-wrap: wrap;
+        background: linear-gradient(120deg, rgba(45, 212, 191, 0.10), rgba(56, 189, 248, 0.06));
+        border: 1px solid var(--cl-stroke);
+        border-radius: var(--cl-radius);
+        padding: 1.6rem 1.8rem;
+        margin-bottom: 1.25rem;
+        box-shadow: var(--cl-shadow-sm);
       }
+      .eyebrow {
+        font-family: var(--cl-font-display);
+        font-size: 0.72rem; font-weight: 700;
+        letter-spacing: 0.18em; text-transform: uppercase;
+        color: var(--cl-muted); margin-bottom: 0.5rem;
+      }
+      .hero h1 {
+        font-family: var(--cl-font-display);
+        font-size: clamp(1.7rem, 3.5vw, 2.2rem);
+        margin: 0 0 0.5rem; letter-spacing: -0.02em;
+      }
+      .hero-sub {
+        color: var(--cl-muted); margin: 0;
+        font-size: 0.95rem; max-width: 540px;
+      }
+      .hero-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+      button.outline {
+        background: transparent;
+        border: 1px solid var(--cl-stroke-strong);
+        color: var(--cl-text);
+      }
+      button.outline:hover { background: rgba(157, 197, 220, 0.06); }
+      .reclassify-summary { font-size: 0.78rem; margin: 0; }
+      tr.archived td { opacity: 0.55; }
     `,
   ],
 })
@@ -134,7 +176,7 @@ export class ProjectsPageComponent implements OnInit {
   draft: Partial<Project> = { color: '#3B82F6', currency: 'USD', is_active: true, match_keywords: '' };
   error = signal<string | null>(null);
   reclassifying = signal(false);
-  reclassifyResult = signal<{ scanned: number; matched: number; unchanged: number } | null>(null);
+  reclassifyResult = signal<{ scanned: number; matched: number; unchanged: number; sessions_scanned?: number; sessions_matched?: number } | null>(null);
 
   ngOnInit(): void {
     this.reload();
