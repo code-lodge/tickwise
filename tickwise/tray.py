@@ -19,9 +19,66 @@ from tickwise.config import API_HOST, API_PORT
 from tickwise.sessions.tracker import today_total_seconds
 
 
+def _find_electron_install() -> "Path | None":
+    """Locate the Electron-built Tickwise app on this machine, or None.
+
+    Electron-builder's NSIS installer drops a `resources/app.asar` next
+    to the executable — that's the marker we use to distinguish a real
+    Electron install from this PyInstaller bundle (which is also called
+    Tickwise.exe and would otherwise loop).
+    """
+    import os
+    import sys
+    from pathlib import Path
+
+    candidates: list[Path] = []
+    if sys.platform == "win32":
+        for env in ("LOCALAPPDATA", "PROGRAMFILES", "PROGRAMFILES(X86)"):
+            base = os.environ.get(env)
+            if not base:
+                continue
+            candidates.append(Path(base) / "Programs" / "Tickwise" / "Tickwise.exe")
+            candidates.append(Path(base) / "Tickwise" / "Tickwise.exe")
+    elif sys.platform == "darwin":
+        candidates.append(Path("/Applications/Tickwise.app/Contents/MacOS/Tickwise"))
+        candidates.append(Path.home() / "Applications/Tickwise.app/Contents/MacOS/Tickwise")
+    elif sys.platform.startswith("linux"):
+        candidates.append(Path.home() / "Applications" / "Tickwise.AppImage")
+        candidates.append(Path("/opt/Tickwise/tickwise"))
+
+    for cand in candidates:
+        if not cand.is_file():
+            continue
+        # Distinguish Electron from this PyInstaller exe: Electron always
+        # ships a resources/app.asar (Win/Linux) or Resources/app.asar (mac).
+        for asar in (cand.parent / "resources" / "app.asar", cand.parent.parent / "Resources" / "app.asar"):
+            if asar.is_file():
+                return cand
+    return None
+
+
 def _open_dashboard() -> None:
-    """Open the local dashboard URL in the default browser."""
+    """Open the dashboard.
+
+    Prefers the Electron-built Tickwise app — it provides the proper
+    "open in its own window" experience the user expects from clicking
+    Open Dashboard. Electron's single-instance lock makes the Popen
+    idempotent: if it's already running, the new process focuses the
+    existing window and exits.
+
+    Falls back to the default browser when the Electron app isn't
+    installed (dev mode, or running the standalone PyInstaller exe).
+    """
+    import subprocess
     import webbrowser
+
+    electron = _find_electron_install()
+    if electron is not None:
+        try:
+            subprocess.Popen([str(electron)], close_fds=True)
+            return
+        except Exception as exc:  # noqa: BLE001 — fall back rather than crash
+            logger.warning("Failed to launch Electron app, falling back to browser: %s", exc)
 
     webbrowser.open(f"http://{API_HOST}:{API_PORT}/")
 
