@@ -129,17 +129,19 @@ def _best_match(norm_hay: str, project_rows: list) -> KeywordMatch | None:
 
 
 def reclassify_stored_activities(only_unclassified: bool = True) -> dict[str, int]:
-    """Re-run the matcher across already-stored activities.
+    """Re-run the matcher across already-stored activities AND sessions.
 
-    Used by the /api/reclassify endpoint and by the projects API on
-    keyword changes — so the user doesn't need to wait for new captures
-    to see their existing timeline pick up the rules they just typed.
+    Used by the /api/projects/reclassify endpoint and by the projects
+    API on keyword changes — so the user doesn't need to wait for new
+    captures to see their existing timeline pick up the rules they just
+    typed.
 
     When ``only_unclassified`` is True (default), only rows whose
     ``project_id`` is NULL get reconsidered. Pass False to overwrite
     every existing assignment — useful after a major rules cleanup.
 
-    Returns a counter dict: {scanned, matched, unchanged}.
+    Returns a counter dict:
+      {scanned, matched, unchanged, sessions_scanned, sessions_matched}.
     """
     conn = get_connection()
     projects = conn.execute(
@@ -148,24 +150,26 @@ def reclassify_stored_activities(only_unclassified: bool = True) -> dict[str, in
         "ORDER BY id"
     ).fetchall()
     if not projects:
-        return {"scanned": 0, "matched": 0, "unchanged": 0}
+        return {
+            "scanned": 0,
+            "matched": 0,
+            "unchanged": 0,
+            "sessions_scanned": 0,
+            "sessions_matched": 0,
+        }
 
+    # ── Activities pass ─────────────────────────────────────────────
     where = "WHERE project_id IS NULL" if only_unclassified else ""
-    rows = conn.execute(
+    activity_rows = conn.execute(
         f"SELECT id, window_title, process_name, ocr_text, redacted_text, project_id "
         f"FROM activities {where}"
     ).fetchall()
 
     matched = 0
     unchanged = 0
-    for row in rows:
-        haystack_parts = [
-            row["window_title"],
-            row["process_name"],
-            row["ocr_text"],
-            row["redacted_text"],
-        ]
-        haystack = " ".join(p for p in haystack_parts if p)
+    for row in activity_rows:
+        parts = [row["window_title"], row["process_name"], row["ocr_text"], row["redacted_text"]]
+        haystack = " ".join(p for p in parts if p)
         if not haystack.strip():
             unchanged += 1
             continue
@@ -183,15 +187,51 @@ def reclassify_stored_activities(only_unclassified: bool = True) -> dict[str, in
             (hit.project_id, row["id"]),
         )
         matched += 1
+
+    # ── Sessions pass ───────────────────────────────────────────────
+    # Sessions store the human-readable "process — title" string in
+    # `description`. That's the same signal as the activity title, but
+    # it's the column the timeline actually reads when deciding what
+    # bucket to show the row in — so even if activities matched, the
+    # session can still display "Unclassified" until we update it.
+    session_rows = conn.execute(
+        f"SELECT id, description, project_id FROM sessions {where}"
+    ).fetchall()
+
+    sessions_matched = 0
+    for row in session_rows:
+        desc = row["description"]
+        if not desc:
+            continue
+        norm_hay = _normalize(desc)
+        if len(norm_hay) < _MIN_NORMALIZED_LEN:
+            continue
+        hit = _best_match(norm_hay, projects)
+        if hit is None or hit.project_id == row["project_id"]:
+            continue
+        conn.execute(
+            "UPDATE sessions SET project_id = ? WHERE id = ?",
+            (hit.project_id, row["id"]),
+        )
+        sessions_matched += 1
+
     conn.commit()
     logger.info(
-        "Reclassified: scanned=%d matched=%d unchanged=%d (only_unclassified=%s)",
-        len(rows),
+        "Reclassified: activities scanned=%d matched=%d, sessions scanned=%d matched=%d "
+        "(only_unclassified=%s)",
+        len(activity_rows),
         matched,
-        unchanged,
+        len(session_rows),
+        sessions_matched,
         only_unclassified,
     )
-    return {"scanned": len(rows), "matched": matched, "unchanged": unchanged}
+    return {
+        "scanned": len(activity_rows),
+        "matched": matched,
+        "unchanged": unchanged,
+        "sessions_scanned": len(session_rows),
+        "sessions_matched": sessions_matched,
+    }
 
 
 def _score_keyword(keyword: str, norm_hay: str) -> int:

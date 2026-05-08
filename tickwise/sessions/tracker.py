@@ -122,23 +122,40 @@ class SessionTracker:
                 duration,
             )
             return None
+        # Session description is `process — window-title` — exactly the
+        # raw signal the keyword matcher wants. Run it before insert so
+        # the session lands with the right project_id from day one
+        # instead of stranding the user on the timeline at "Unclassified".
+        from tickwise.capture import browser_bridge
+        from tickwise.classification.keyword_matcher import match_project
+
+        description = f"{sess.process} — {sess.title}".strip(" —") or None
+        ctx = browser_bridge.latest()
+        haystack_parts = [description, ctx.url if ctx else None, ctx.title if ctx else None]
+        haystack = " ".join(p for p in haystack_parts if p)
+        hit = match_project(haystack) if haystack else None
+        project_id = hit.project_id if hit else None
+
         try:
             with transaction() as conn:
                 cur = conn.execute(
                     """
                     INSERT INTO sessions
                         (started_at, ended_at, duration_secs, description,
-                         is_manual, llm_classified)
-                    VALUES (?, ?, ?, ?, 0, 0)
+                         project_id, is_manual)
+                    VALUES (?, ?, ?, ?, ?, 0)
                     """,
                     (
                         sess.started_at.isoformat(),
                         closed_at.isoformat(),
                         int(duration),
-                        f"{sess.process} — {sess.title}".strip(" —") or None,
+                        description,
+                        project_id,
                     ),
                 )
                 row_id = cur.lastrowid
+            if hit is not None:
+                logger.debug("Session matched: %s ← %r", hit.project_name, hit.matched_keyword)
             return int(row_id) if row_id is not None else None
         except Exception:
             logger.exception("failed to persist session")

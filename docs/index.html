@@ -207,76 +207,139 @@
   </p>
 </section>
 
-<!-- ── SCREENSHOT GALLERY ───────────────────────────── -->
+<!-- ── DASHBOARD MOCK ───────────────────────────────── -->
 <div class="cl-shell" style="padding-bottom: 5rem;">
-  <div class="gallery">
-    <div class="gallery-tabs" role="tablist" aria-label="Dashboard pages">
-      <button class="active" data-shot="live" role="tab" aria-selected="true">Live</button>
-      <button data-shot="projects" role="tab" aria-selected="false">Projects</button>
-      <button data-shot="timeline" role="tab" aria-selected="false">Timeline</button>
-      <button data-shot="pomodoro" role="tab" aria-selected="false">Pomodoro</button>
-      <button data-shot="privacy" role="tab" aria-selected="false">Privacy</button>
+  <div class="shot-frame">
+    <div class="shot-titlebar">
+      <span class="shot-dot r"></span><span class="shot-dot y"></span><span class="shot-dot g"></span>
+      <span class="shot-url">127.0.0.1:19532 / live</span>
     </div>
-    <div class="gallery-shots">
-      <figure class="shot-frame active" data-shot="live">
-        <div class="shot-titlebar">
-          <span class="shot-dot r"></span><span class="shot-dot y"></span><span class="shot-dot g"></span>
-          <span class="shot-url">127.0.0.1:19532 / live</span>
+    <div class="mock">
+      <header class="mock-hero">
+        <div>
+          <div class="mock-eyebrow">TODAY · 09 MAY</div>
+          <h2 class="mock-h">Tickwise Live</h2>
+          <p class="mock-sub">Capture loop running. 4 sessions classified by keyword in the last hour.</p>
+          <div class="mock-cta-row">
+            <span class="cl-pill cl-pill-good"><span class="cl-pill-dot"></span> TRACKING</span>
+            <a class="cl-btn cl-btn-primary" href="#">View Timeline →</a>
+            <a class="cl-btn cl-btn-secondary" href="#">All Projects</a>
+          </div>
         </div>
-        <img src="assets/screenshots/01-live.png" alt="Live dashboard showing total tracked time, billable seconds, unclassified count and WebSocket status, with a per-project breakdown" loading="lazy" />
-      </figure>
-      <figure class="shot-frame" data-shot="projects">
-        <div class="shot-titlebar">
-          <span class="shot-dot r"></span><span class="shot-dot y"></span><span class="shot-dot g"></span>
-          <span class="shot-url">127.0.0.1:19532 / projects</span>
+      </header>
+      <div class="mock-stats">
+        <article class="mock-stat">
+          <div class="mock-eyebrow">TOTAL TRACKED</div>
+          <div class="mock-num">6h 12m</div>
+          <div class="mock-foot">38 sessions</div>
+        </article>
+        <article class="mock-stat">
+          <div class="mock-eyebrow">BILLABLE</div>
+          <div class="mock-num cl-accent-text">5h 47m</div>
+          <div class="mock-foot">93% of tracked</div>
+        </article>
+        <article class="mock-stat">
+          <div class="mock-eyebrow">UNCLASSIFIED</div>
+          <div class="mock-num">3</div>
+          <div class="mock-foot">Review on the Timeline page</div>
+        </article>
+        <article class="mock-stat">
+          <div class="mock-eyebrow">WEBSOCKET</div>
+          <div class="mock-num" style="color: var(--cl-good)">Connected</div>
+          <div class="mock-foot">Browser extension live</div>
+        </article>
+      </div>
+      <h3 class="mock-section-h">By project</h3>
+      <div class="mock-rows">
+        <div class="mock-row">
+          <span class="mock-color" style="background: var(--cl-accent-2)"></span>
+          <span class="mock-name">Sceneryenzo website</span>
+          <span class="mock-bar"><span style="width: 78%"></span></span>
+          <span class="mock-time">3h 22m</span>
         </div>
-        <img src="assets/screenshots/02-projects.png" alt="Projects page with the new-project form and a table listing existing projects, their match keywords, hourly rate, tracked time, archive and delete actions" loading="lazy" />
-      </figure>
-      <figure class="shot-frame" data-shot="timeline">
-        <div class="shot-titlebar">
-          <span class="shot-dot r"></span><span class="shot-dot y"></span><span class="shot-dot g"></span>
-          <span class="shot-url">127.0.0.1:19532 / timeline</span>
+        <div class="mock-row">
+          <span class="mock-color" style="background: var(--cl-accent)"></span>
+          <span class="mock-name">Acme client docs</span>
+          <span class="mock-bar"><span style="width: 42%"></span></span>
+          <span class="mock-time">1h 47m</span>
         </div>
-        <img src="assets/screenshots/03-timeline.png" alt="Timeline page listing recent sessions with start time, duration, project assignment, window title, and split or delete actions" loading="lazy" />
-      </figure>
-      <figure class="shot-frame" data-shot="pomodoro">
-        <div class="shot-titlebar">
-          <span class="shot-dot r"></span><span class="shot-dot y"></span><span class="shot-dot g"></span>
-          <span class="shot-url">127.0.0.1:19532 / pomodoro</span>
+        <div class="mock-row">
+          <span class="mock-color" style="background: var(--cl-violet)"></span>
+          <span class="mock-name">Internal R&amp;D</span>
+          <span class="mock-bar"><span style="width: 24%"></span></span>
+          <span class="mock-time">38m</span>
         </div>
-        <img src="assets/screenshots/04-pomodoro.png" alt="Pomodoro page with a large countdown, idle status pill, focus and break controls, settings panel and a history table of recent sessions" loading="lazy" />
-      </figure>
-      <figure class="shot-frame" data-shot="privacy">
-        <div class="shot-titlebar">
-          <span class="shot-dot r"></span><span class="shot-dot y"></span><span class="shot-dot g"></span>
-          <span class="shot-url">127.0.0.1:19532 / privacy</span>
-        </div>
-        <img src="assets/screenshots/05-privacy.png" alt="Privacy page with privacy-level radio buttons, a redaction preview text area, and a custom-rules table for client-specific patterns" loading="lazy" />
-      </figure>
+      </div>
     </div>
   </div>
 </div>
 
-<script>
-  // Tabbed gallery — switch which screenshot is visible.
-  (function () {
-    const tabs = document.querySelectorAll(".gallery-tabs button");
-    const shots = document.querySelectorAll(".gallery-shots .shot-frame");
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        const target = tab.dataset.shot;
-        tabs.forEach((t) => {
-          const on = t === tab;
-          t.classList.toggle("active", on);
-          t.setAttribute("aria-selected", on ? "true" : "false");
-        });
-        shots.forEach((shot) => {
-          shot.classList.toggle("active", shot.dataset.shot === target);
-        });
-      });
-    });
-  })();
-</script>
+<style>
+  .mock { padding: 1.6rem 1.8rem; }
+  .mock-hero {
+    background: linear-gradient(120deg, rgba(45,212,191,.10), rgba(56,189,248,.08));
+    border: 1px solid var(--cl-stroke);
+    border-radius: var(--cl-radius);
+    padding: 1.6rem 1.7rem; margin-bottom: 1.2rem;
+  }
+  .mock-eyebrow {
+    font-family: var(--cl-font-display);
+    font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--cl-muted); margin-bottom: 0.5rem;
+  }
+  .mock-h { font-size: clamp(1.6rem, 3vw, 2rem); margin: 0 0 0.5rem; }
+  .mock-sub { color: var(--cl-muted); margin: 0 0 1rem; font-size: 0.95rem; }
+  .mock-cta-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+  .mock-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.85rem; margin-bottom: 1.5rem;
+  }
+  .mock-stat {
+    background: var(--cl-bg-2);
+    border: 1px solid var(--cl-stroke);
+    border-radius: var(--cl-radius);
+    padding: 1.1rem 1.2rem;
+  }
+  .mock-num {
+    font-family: var(--cl-font-display);
+    font-size: 1.85rem; font-weight: 700;
+    letter-spacing: -0.02em; line-height: 1.05;
+    margin: 0.35rem 0 0.45rem; color: var(--cl-text);
+  }
+  .mock-foot { color: var(--cl-muted); font-size: 0.78rem; }
+  .mock-section-h {
+    font-family: var(--cl-font-display);
+    font-size: 0.72rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--cl-muted);
+    margin: 0 0 0.7rem;
+  }
+  .mock-rows { display: flex; flex-direction: column; gap: 0.55rem; }
+  .mock-row {
+    display: flex; align-items: center; gap: 0.85rem;
+    padding: 0.7rem 0.95rem;
+    border: 1px solid var(--cl-stroke);
+    background: var(--cl-bg-2);
+    border-radius: var(--cl-radius-sm);
+    font-size: 0.9rem;
+  }
+  .mock-color { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .mock-name { flex: 1; }
+  .mock-bar {
+    width: 200px; height: 6px;
+    background: rgba(157, 197, 220, 0.10);
+    border-radius: 3px; overflow: hidden; flex-shrink: 0;
+  }
+  .mock-bar > span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--cl-accent), var(--cl-accent-2));
+  }
+  .mock-time {
+    font-family: var(--cl-font-mono); font-size: 0.84rem;
+    color: var(--cl-muted); width: 60px; text-align: right;
+  }
+</style>
 
 <!-- ── FEATURES ──────────────────────────────────────── -->
 <section id="features" class="cl-section cl-shell">
