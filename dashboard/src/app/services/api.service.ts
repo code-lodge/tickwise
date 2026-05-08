@@ -8,8 +8,6 @@ import {
   CustomRule,
   FreelancerProfile,
   Invoice,
-  LLMConfig,
-  LLMUsage,
   PomodoroHistoryEntry,
   PomodoroSettings,
   PomodoroStatus,
@@ -86,8 +84,10 @@ export class ApiService {
   updateProject(id: number, p: Partial<Project>): Observable<Project> {
     return this.http.put<Project>(`${this.base}/projects/${id}`, p);
   }
-  deleteProject(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/projects/${id}`);
+  deleteProject(id: number, hard = false): Observable<void> {
+    return this.http.delete<void>(`${this.base}/projects/${id}`, {
+      params: hard ? { hard: 'true' } : {},
+    });
   }
 
   // Clients
@@ -196,24 +196,6 @@ export class ApiService {
   }
   preview(text: string, level: number): Observable<PreviewResult> {
     return this.http.post<PreviewResult>(`${this.base}/redaction/preview`, { text, level });
-  }
-
-  // LLM
-  llmConfig(): Observable<LLMConfig> {
-    return this.http.get<LLMConfig>(`${this.base}/llm/config`);
-  }
-  updateLLMConfig(cfg: Partial<LLMConfig>): Observable<LLMConfig> {
-    return this.http.put<LLMConfig>(`${this.base}/llm/config`, cfg);
-  }
-  llmUsage(limit = 25): Observable<LLMUsage> {
-    return this.http.get<LLMUsage>(`${this.base}/llm/usage`, { params: { limit } });
-  }
-  testClassify(payload: {
-    process_name?: string;
-    window_title?: string;
-    ocr_text?: string;
-  }): Observable<unknown> {
-    return this.http.post<unknown>(`${this.base}/llm/test`, payload);
   }
 
   // Helpers

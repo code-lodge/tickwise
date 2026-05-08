@@ -11,7 +11,7 @@ from tickwise.db.connection import get_connection
 logger = logging.getLogger(__name__)
 
 # Current schema version — bump when adding migrations.
-SCHEMA_VERSION: int = 6
+SCHEMA_VERSION: int = 7
 
 # ─── DDL ─────────────────────────────────────────────────────────────────────
 
@@ -474,6 +474,18 @@ def _migration_006_multi_monitor(conn: sqlite3.Connection) -> None:
         """)
 
 
+def _migration_007_keyword_match(conn: sqlite3.Connection) -> None:
+    """Add per-project keyword list for free LLM-bypass classification.
+
+    Keywords are stored as a single newline-separated TEXT blob, case-insensitive
+    substring matched against window title / URL / browser title / OCR text in
+    the classification pipeline. New projects default to their own name; users
+    can edit or clear the list from the dashboard.
+    """
+    _add_column_if_missing(conn, "projects", "match_keywords", "match_keywords TEXT")
+    conn.execute("UPDATE projects SET match_keywords = name WHERE match_keywords IS NULL")
+
+
 _MIGRATIONS: list[tuple[int, Callable[[sqlite3.Connection], None]]] = [
     (1, _migration_001_seed_defaults),
     (2, _migration_002_add_activity_source),
@@ -481,4 +493,5 @@ _MIGRATIONS: list[tuple[int, Callable[[sqlite3.Connection], None]]] = [
     (4, _migration_004_invoicing),
     (5, _migration_005_pomodoro),
     (6, _migration_006_multi_monitor),
+    (7, _migration_007_keyword_match),
 ]

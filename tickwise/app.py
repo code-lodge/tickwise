@@ -18,7 +18,6 @@ from tickwise.api.routes_categories import router as categories_router
 from tickwise.api.routes_clients import router as clients_router
 from tickwise.api.routes_cloudflare import router as cloudflare_router
 from tickwise.api.routes_invoices import router as invoices_router
-from tickwise.api.routes_llm import router as llm_router
 from tickwise.api.routes_mobile import router as mobile_router
 from tickwise.api.routes_monitors import router as monitors_router
 from tickwise.api.routes_onboarding import router as onboarding_router
@@ -83,7 +82,6 @@ def create_app() -> FastAPI:
     app.include_router(categories_router)
     app.include_router(sessions_router)
     app.include_router(redaction_router)
-    app.include_router(llm_router)
     app.include_router(calendar_router)
     app.include_router(cloudflare_router)
     app.include_router(reports_router)

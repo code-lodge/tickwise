@@ -298,7 +298,7 @@ class CaptureLoop:
                         (captured_at, window_title, process_name, ocr_text,
                          redacted_text, phash, change_detected, source,
                          pomodoro_session_id, monitor_index)
-                    VALUES (?, ?, ?, ?, ?, ?, 1, 'pending_classification', ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, 1, 'unclassified', ?, ?)
                     """,
                     (
                         captured_at.isoformat(),

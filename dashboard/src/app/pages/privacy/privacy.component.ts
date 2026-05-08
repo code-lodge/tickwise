@@ -2,20 +2,20 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import type {
-  CustomRule,
-  LLMConfig,
-  LLMUsage,
-  PreviewResult,
-  RedactionLevel,
-} from '../../models';
+import type { CustomRule, PreviewResult, RedactionLevel } from '../../models';
 
 @Component({
   selector: 'app-privacy',
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <h1>Privacy &amp; LLM</h1>
+    <h1>Privacy</h1>
+    <p class="muted">
+      Tickwise runs entirely on this machine — no cloud, no API keys, no
+      subscriptions. Activity is classified by matching keywords from your
+      projects against the window title, browser URL, and on-screen text.
+      Redaction is applied before any text is stored.
+    </p>
 
     <div class="grid">
       <section class="card stack">
@@ -94,75 +94,6 @@ import type {
       </table>
     </section>
 
-    <section class="card stack" style="margin-top:1rem">
-      <h3>LLM configuration</h3>
-      <div class="row">
-        <label>
-          Provider
-          <select [(ngModel)]="llmDraft.provider">
-            <option value="anthropic">Anthropic</option>
-            <option value="openai">OpenAI</option>
-          </select>
-        </label>
-        <label>
-          Model
-          <input [(ngModel)]="llmDraft.model" />
-        </label>
-        <label>
-          Monthly budget (¢)
-          <input type="number" [(ngModel)]="llmDraft.monthly_budget_cents" min="0" />
-        </label>
-      </div>
-      <div class="row">
-        <label style="flex:1">
-          API key
-          <input
-            type="password"
-            [(ngModel)]="apiKeyInput"
-            [placeholder]="llmDraft.has_api_key ? '•••••• (stored)' : 'sk-…'"
-          />
-        </label>
-        <label class="row">
-          <input type="checkbox" [(ngModel)]="llmDraft.is_active" /> Active
-        </label>
-      </div>
-      <div class="row">
-        <button (click)="saveLLM()">Save</button>
-        <button class="ghost" (click)="testLLM()">Run test</button>
-      </div>
-      <pre *ngIf="testResult()" style="background:#f1f5f9; padding:0.5rem; border-radius:0.375rem">{{ testResult() | json }}</pre>
-    </section>
-
-    <section class="card stack" style="margin-top:1rem">
-      <h3>Usage</h3>
-      <div *ngIf="usage() as u" class="row" style="flex-wrap: wrap; gap: 1.5rem">
-        <div>
-          <div class="muted">Calls</div>
-          <div class="big">{{ u.summary.calls }}</div>
-        </div>
-        <div>
-          <div class="muted">Cache hits</div>
-          <div class="big">{{ u.summary.cache_hits }}</div>
-        </div>
-        <div>
-          <div class="muted">Tokens (in/out)</div>
-          <div>
-            {{ u.summary.prompt_tokens }} / {{ u.summary.completion_tokens }}
-          </div>
-        </div>
-        <div>
-          <div class="muted">Spent</div>
-          <div class="big">{{ (u.summary.cost_cents / 100) | number: '1.2-2' }} USD</div>
-        </div>
-        <div>
-          <div class="muted">Budget</div>
-          <div class="big" [class.error]="u.budget.over_budget">
-            {{ u.budget.budget_cents === 0 ? 'unlimited' : (u.budget.spent_cents / 100 | number: '1.2-2') + ' / ' + (u.budget.budget_cents / 100 | number: '1.2-2') }}
-          </div>
-        </div>
-      </div>
-    </section>
-
     <p *ngIf="error()" class="error">{{ error() }}</p>
   `,
   styles: [
@@ -171,10 +102,6 @@ import type {
         display: grid;
         gap: 1rem;
         grid-template-columns: 1fr 1fr;
-      }
-      .big {
-        font-size: 1.25rem;
-        font-weight: 600;
       }
       @media (max-width: 720px) {
         .grid {
@@ -196,26 +123,11 @@ export class PrivacyPageComponent implements OnInit {
     replacement: '[REDACTED]',
     is_active: true,
   };
-
-  llmDraft: LLMConfig = {
-    provider: 'anthropic',
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 256,
-    temperature: 0,
-    monthly_budget_cents: 0,
-    is_active: true,
-    has_api_key: false,
-  };
-  apiKeyInput = '';
-  testResult = signal<unknown>(null);
-  usage = signal<LLMUsage | null>(null);
   error = signal<string | null>(null);
 
   ngOnInit(): void {
     this.reloadLevel();
     this.reloadRules();
-    this.api.llmConfig().subscribe((c) => (this.llmDraft = c));
-    this.reloadUsage();
   }
 
   setLevel(level: number): void {
@@ -226,9 +138,6 @@ export class PrivacyPageComponent implements OnInit {
   }
   reloadRules(): void {
     this.api.rules().subscribe((r) => this.rules.set(r));
-  }
-  reloadUsage(): void {
-    this.api.llmUsage().subscribe((u) => this.usage.set(u));
   }
 
   runPreview(): void {
@@ -249,27 +158,5 @@ export class PrivacyPageComponent implements OnInit {
 
   deleteRule(id: number): void {
     this.api.deleteRule(id).subscribe(() => this.reloadRules());
-  }
-
-  saveLLM(): void {
-    const payload: Partial<LLMConfig> = { ...this.llmDraft };
-    if (this.apiKeyInput) {
-      payload.api_key = this.apiKeyInput;
-    }
-    this.api.updateLLMConfig(payload).subscribe({
-      next: (c) => {
-        this.llmDraft = c;
-        this.apiKeyInput = '';
-        this.reloadUsage();
-      },
-      error: (err) => this.error.set(err.error?.detail || err.message),
-    });
-  }
-
-  testLLM(): void {
-    this.api.testClassify({}).subscribe({
-      next: (r) => this.testResult.set(r),
-      error: (err) => this.error.set(err.error?.detail || err.message),
-    });
   }
 }

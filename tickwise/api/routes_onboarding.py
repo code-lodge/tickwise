@@ -30,9 +30,6 @@ async def state() -> dict[str, Any]:
     blank page.
     """
     conn = get_connection()
-    llm = conn.execute("SELECT api_key_ref, is_active FROM llm_config WHERE id = 1").fetchone()
-    has_llm = bool(llm and llm["api_key_ref"] and llm["is_active"])
-
     profile = conn.execute("SELECT name, email FROM freelancer_profile WHERE id = 1").fetchone()
     has_profile = bool(profile and (profile["name"] or "").strip())
 
@@ -41,7 +38,6 @@ async def state() -> dict[str, Any]:
     has_privacy = privacy_level is not None
 
     needs = {
-        "needs_llm_setup": not has_llm,
         "needs_profile": not has_profile,
         "needs_first_project": project_count == 0,
         "needs_privacy_choice": not has_privacy,

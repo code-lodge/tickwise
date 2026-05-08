@@ -5,7 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { ApiService } from './services/api.service';
 
 interface OnboardingState {
-  needs_llm_setup: boolean;
   needs_profile: boolean;
   needs_first_project: boolean;
   needs_privacy_choice: boolean;
@@ -21,7 +20,6 @@ interface OnboardingState {
     <div *ngIf="onboarding() && !onboarding()!.complete" class="first-run-banner">
       <span>
         <strong>Finish setting up Tickwise.</strong>
-        <span *ngIf="onboarding()!.needs_llm_setup"> Add an LLM key,</span>
         <span *ngIf="onboarding()!.needs_profile"> fill in your business profile,</span>
         <span *ngIf="onboarding()!.needs_first_project"> create a first project</span>
         — pick up where you left off in
@@ -46,7 +44,7 @@ interface OnboardingState {
         <a routerLink="/invoices" routerLinkActive="active">Invoices</a>
         <a routerLink="/pomodoro" routerLinkActive="active">Pomodoro</a>
         <a routerLink="/mobile" routerLinkActive="active">Mobile</a>
-        <a routerLink="/privacy" routerLinkActive="active">Privacy &amp; LLM</a>
+        <a routerLink="/privacy" routerLinkActive="active">Privacy</a>
         <a routerLink="/settings" routerLinkActive="active">Settings</a>
       </nav>
       <button class="ghost" (click)="toggleTheme()" title="Toggle theme">

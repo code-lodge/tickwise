@@ -19,7 +19,6 @@ export interface Session {
   is_manual: number;
   is_billed: number;
   invoice_id: number | null;
-  llm_classified: number;
   confidence: number | null;
   created_at: string;
   updated_at: string;
@@ -33,6 +32,7 @@ export interface Project {
   hourly_rate: number | null;
   currency: string;
   is_active: boolean;
+  match_keywords: string;
   total_seconds: number;
 }
 
@@ -120,33 +120,6 @@ export interface PreviewResult {
   redacted_length: number;
   redaction_count: number;
   categories_hit: string[];
-}
-
-export interface LLMConfig {
-  provider: 'anthropic' | 'openai';
-  model: string;
-  max_tokens: number;
-  temperature: number;
-  monthly_budget_cents: number;
-  is_active: boolean;
-  api_key?: string | null;
-  has_api_key: boolean;
-}
-
-export interface LLMUsage {
-  summary: {
-    calls: number;
-    cache_hits: number;
-    prompt_tokens: number;
-    completion_tokens: number;
-    cost_cents: number;
-  };
-  budget: {
-    spent_cents: number;
-    budget_cents: number;
-    over_budget: boolean;
-  };
-  recent: Array<Record<string, unknown>>;
 }
 
 export interface TodaySummary {
