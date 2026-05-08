@@ -8,12 +8,12 @@ You are an AI coding agent building ChronoLens. This document defines **how** yo
 
 This is one of four documents that together form the complete project handoff:
 
-| Document                       | Purpose                                                                       | Read When                                                                      |
-| ------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **`specification.md`**         | **What** to build — architecture, schemas, APIs, features                     | Before implementing any feature                                                |
-| **`implementation-phases.md`** | **When** to build it — 12 phases, ordering, dependencies, acceptance criteria | At the start of each phase                                                     |
-| **`AGENTS.md`**                | **How** to work — this document: practices, testing, commits, quality         | Always; re-read when in doubt                                                  |
-| **`engineering-ontology.md`**  | **Why** these standards — the canonical engineering standards reference       | When making architectural decisions, choosing patterns, or resolving ambiguity |
+| Document                            | Purpose                                                                       | Read When                                                                      |
+| ----------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **`docs/specification.md`**         | **What** to build — architecture, schemas, APIs, features                     | Before implementing any feature                                                |
+| **`docs/implementation-phases.md`** | **When** to build it — 12 phases, ordering, dependencies, acceptance criteria | At the start of each phase                                                     |
+| **`AGENTS.md`**                     | **How** to work — this document: practices, testing, commits, quality         | Always; re-read when in doubt                                                  |
+| **`docs/engineering-ontology.md`**  | **Why** these standards — the canonical engineering standards reference       | When making architectural decisions, choosing patterns, or resolving ambiguity |
 
 ### How These Documents Interact
 
