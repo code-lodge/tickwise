@@ -10,7 +10,16 @@ import pytest
 
 from chronolens import runtime
 from chronolens.capture.window_info import WindowInfo
-from chronolens.tray import _format_duration, build_status_text, build_today_total_text
+from chronolens.tray import (
+    _COLOR_IDLE,
+    _COLOR_NEUTRAL,
+    _COLOR_PAUSED,
+    _COLOR_TRACKING,
+    _format_duration,
+    _icon_color,
+    build_status_text,
+    build_today_total_text,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -63,3 +72,38 @@ class TestStatusText:
 class TestTodayTotalText:
     def test_returns_zero_when_empty(self, tmp_db: Path) -> None:
         assert build_today_total_text() == "0s today"
+
+
+@pytest.mark.unit
+class TestIconColor:
+    def test_neutral_when_no_loop(self) -> None:
+        assert _icon_color() == _COLOR_NEUTRAL
+
+    def test_neutral_when_not_running(self) -> None:
+        loop = MagicMock()
+        loop.is_running = False
+        runtime.set_capture_loop(loop)
+        assert _icon_color() == _COLOR_NEUTRAL
+
+    def test_paused(self) -> None:
+        loop = MagicMock()
+        loop.is_running = True
+        loop.is_paused = True
+        runtime.set_capture_loop(loop)
+        assert _icon_color() == _COLOR_PAUSED
+
+    def test_tracking(self) -> None:
+        loop = MagicMock()
+        loop.is_running = True
+        loop.is_paused = False
+        loop.last_idle_seconds = 0.0
+        runtime.set_capture_loop(loop)
+        assert _icon_color() == _COLOR_TRACKING
+
+    def test_idle(self) -> None:
+        loop = MagicMock()
+        loop.is_running = True
+        loop.is_paused = False
+        loop.last_idle_seconds = 600.0
+        runtime.set_capture_loop(loop)
+        assert _icon_color() == _COLOR_IDLE

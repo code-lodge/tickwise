@@ -30,8 +30,28 @@ logger = logging.getLogger(__name__)
 _ICON_SIZE = 64
 _REFRESH_SECONDS = 5.0
 
+# Spec §12 tray-icon state palette. Phase 1 uses tracking / paused / idle;
+# the remaining states (focus, break, error, no-LLM) come online with
+# Phase 3 (LLM) and Phase 7 (Pomodoro).
+_COLOR_TRACKING = "#22C55E"  # green
+_COLOR_PAUSED = "#EAB308"  # yellow
+_COLOR_IDLE = "#9CA3AF"  # gray
+_COLOR_NEUTRAL = "#3B82F6"  # blue (pre-startup)
 
-def _build_icon_image(color: str = "#3B82F6") -> Any:
+
+def _icon_color() -> str:
+    """Pick the tray icon colour from the current runtime state."""
+    loop = runtime.get_capture_loop()
+    if loop is None or not loop.is_running:
+        return _COLOR_NEUTRAL
+    if loop.is_paused:
+        return _COLOR_PAUSED
+    if loop.last_idle_seconds and loop.last_idle_seconds >= 300.0:
+        return _COLOR_IDLE
+    return _COLOR_TRACKING
+
+
+def _build_icon_image(color: str = _COLOR_NEUTRAL) -> Any:
     """Draw a simple clock-face icon for the tray."""
     from PIL import Image, ImageDraw
 
@@ -116,7 +136,7 @@ def run_tray(on_quit: Callable[[], None]) -> None:
 
     icon = pystray.Icon(
         name="ChronoLens",
-        icon=_build_icon_image(),
+        icon=_build_icon_image(_icon_color()),
         title=build_status_text(),
         menu=pystray.Menu(
             pystray.MenuItem(build_status_text, None, enabled=False),
@@ -135,9 +155,14 @@ def run_tray(on_quit: Callable[[], None]) -> None:
     stop_refresh = threading.Event()
 
     def _refresh_loop() -> None:
+        last_color = _icon_color()
         while not stop_refresh.wait(_REFRESH_SECONDS):
             try:
                 icon.title = build_status_text()
+                color = _icon_color()
+                if color != last_color:
+                    icon.icon = _build_icon_image(color)
+                    last_color = color
                 icon.update_menu()
             except Exception:
                 logger.exception("tray refresh failed")
