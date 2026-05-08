@@ -8,6 +8,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
+from tickwise.classification.keyword_matcher import reclassify_stored_activities
 from tickwise.db.connection import get_connection, transaction
 
 logger = logging.getLogger(__name__)
@@ -80,6 +81,17 @@ async def get_project(project_id: int) -> ProjectOut:
     return ProjectOut(**_row_to_dict(row, row["total_seconds"]))
 
 
+@router.post("/reclassify")
+async def reclassify(overwrite: bool = False) -> dict[str, int]:
+    """Re-run the keyword matcher across stored activities.
+
+    By default only touches rows that haven't been classified yet. Pass
+    ``overwrite=true`` to also reconsider activities that already have
+    a project assigned — useful after a big keyword cleanup.
+    """
+    return reclassify_stored_activities(only_unclassified=not overwrite)
+
+
 @router.post("", response_model=ProjectOut, status_code=201)
 async def create_project(payload: ProjectIn) -> ProjectOut:
     with transaction() as conn:
@@ -105,6 +117,7 @@ async def create_project(payload: ProjectIn) -> ProjectOut:
 @router.put("/{project_id}", response_model=ProjectOut)
 async def update_project(project_id: int, payload: ProjectIn) -> ProjectOut:
     with transaction() as conn:
+        prev = conn.execute("SELECT match_keywords FROM projects WHERE id = ?", (project_id,)).fetchone()
         cur = conn.execute(
             """
             UPDATE projects
@@ -126,6 +139,14 @@ async def update_project(project_id: int, payload: ProjectIn) -> ProjectOut:
         )
         if cur.rowcount == 0:
             raise HTTPException(status_code=404, detail=f"Project {project_id} not found")
+    # If the keyword list changed, sweep the unclassified backlog so the
+    # user sees their existing timeline pick up the new rules without
+    # waiting for new captures.
+    if prev is None or (prev["match_keywords"] or "") != (payload.match_keywords or ""):
+        try:
+            reclassify_stored_activities(only_unclassified=True)
+        except Exception:
+            logger.exception("auto-reclassify after project update failed")
     return await get_project(project_id)
 
 

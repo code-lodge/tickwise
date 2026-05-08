@@ -112,9 +112,13 @@ def match_project(haystack: str) -> KeywordMatch | None:
         )
         .fetchall()
     )
+    return _best_match(norm_hay, rows)
 
+
+def _best_match(norm_hay: str, project_rows: list) -> KeywordMatch | None:
+    """Score every keyword against the (already normalised) haystack."""
     best: KeywordMatch | None = None
-    for row in rows:
+    for row in project_rows:
         for kw in _split_keywords(row["match_keywords"]):
             score = _score_keyword(kw, norm_hay)
             if score == 0:
@@ -122,6 +126,72 @@ def match_project(haystack: str) -> KeywordMatch | None:
             if best is None or score > best.score:
                 best = KeywordMatch(int(row["id"]), str(row["name"]), kw, score)
     return best
+
+
+def reclassify_stored_activities(only_unclassified: bool = True) -> dict[str, int]:
+    """Re-run the matcher across already-stored activities.
+
+    Used by the /api/reclassify endpoint and by the projects API on
+    keyword changes — so the user doesn't need to wait for new captures
+    to see their existing timeline pick up the rules they just typed.
+
+    When ``only_unclassified`` is True (default), only rows whose
+    ``project_id`` is NULL get reconsidered. Pass False to overwrite
+    every existing assignment — useful after a major rules cleanup.
+
+    Returns a counter dict: {scanned, matched, unchanged}.
+    """
+    conn = get_connection()
+    projects = conn.execute(
+        "SELECT id, name, match_keywords FROM projects "
+        "WHERE is_active = 1 AND match_keywords IS NOT NULL AND match_keywords != '' "
+        "ORDER BY id"
+    ).fetchall()
+    if not projects:
+        return {"scanned": 0, "matched": 0, "unchanged": 0}
+
+    where = "WHERE project_id IS NULL" if only_unclassified else ""
+    rows = conn.execute(
+        f"SELECT id, window_title, process_name, ocr_text, redacted_text, project_id "
+        f"FROM activities {where}"
+    ).fetchall()
+
+    matched = 0
+    unchanged = 0
+    for row in rows:
+        haystack_parts = [
+            row["window_title"],
+            row["process_name"],
+            row["ocr_text"],
+            row["redacted_text"],
+        ]
+        haystack = " ".join(p for p in haystack_parts if p)
+        if not haystack.strip():
+            unchanged += 1
+            continue
+        norm_hay = _normalize(haystack)
+        if len(norm_hay) < _MIN_NORMALIZED_LEN:
+            unchanged += 1
+            continue
+        hit = _best_match(norm_hay, projects)
+        if hit is None or hit.project_id == row["project_id"]:
+            unchanged += 1
+            continue
+        conn.execute(
+            "UPDATE activities SET project_id = ?, source = 'keyword_match', "
+            "confidence = 1.0 WHERE id = ?",
+            (hit.project_id, row["id"]),
+        )
+        matched += 1
+    conn.commit()
+    logger.info(
+        "Reclassified: scanned=%d matched=%d unchanged=%d (only_unclassified=%s)",
+        len(rows),
+        matched,
+        unchanged,
+        only_unclassified,
+    )
+    return {"scanned": len(rows), "matched": matched, "unchanged": unchanged}
 
 
 def _score_keyword(keyword: str, norm_hay: str) -> int:

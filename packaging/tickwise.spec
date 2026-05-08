@@ -18,7 +18,7 @@ Run from the project root:
 
 from pathlib import Path
 
-from PyInstaller.utils.hooks import collect_submodules
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 ROOT = Path.cwd()
 VENDOR = ROOT / "packaging" / "vendor"
@@ -37,6 +37,15 @@ if DASHBOARD_BUILD.is_dir():
 if VENDOR.is_dir():
     datas.append((str(VENDOR), "vendor"))
 
+# RapidOCR ships its ONNX detection / recognition / classification models
+# as data files inside the wheel. PyInstaller's default analysis misses
+# them — collect_data_files walks the package and grabs the models, the
+# default config.yaml, and the dictionary text files.
+try:
+    datas.extend(collect_data_files("rapidocr_onnxruntime", include_py_files=False))
+except Exception:  # noqa: BLE001 — OCR is optional at packaging time
+    pass
+
 # Force-include modules PyInstaller can't see through dynamic imports.
 hiddenimports = [
     "uvicorn.lifespan.on",
@@ -47,7 +56,7 @@ hiddenimports = [
 ]
 
 # Optional native deps — not always present, only ride along when installed.
-for opt in ("weasyprint", "icalendar", "caldav", "qrcode"):
+for opt in ("weasyprint", "icalendar", "caldav", "qrcode", "rapidocr_onnxruntime", "onnxruntime"):
     try:
         hiddenimports.extend(collect_submodules(opt))
     except Exception:  # noqa: BLE001

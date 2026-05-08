@@ -89,6 +89,13 @@ export class ApiService {
       params: hard ? { hard: 'true' } : {},
     });
   }
+  reclassifyAll(overwrite = false): Observable<{ scanned: number; matched: number; unchanged: number }> {
+    return this.http.post<{ scanned: number; matched: number; unchanged: number }>(
+      `${this.base}/projects/reclassify`,
+      null,
+      { params: overwrite ? { overwrite: 'true' } : {} },
+    );
+  }
 
   // Clients
   clients(): Observable<Client[]> {

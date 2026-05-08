@@ -8,6 +8,23 @@ version = "1.0.0"
 description = "Privacy-conscious automatic time tracking for freelancers"
 requires-python = ">=3.12"
 readme = "README.md"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "Pillow",
+    "imagehash",
+    "mss",
+    "numpy",
+    "pystray",
+    "rapidocr_onnxruntime",
+    "onnxruntime",
+    "qrcode",
+    "psutil",
+    "weasyprint",
+    "icalendar",
+    "caldav",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]

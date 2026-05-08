@@ -1,9 +1,9 @@
-"""PaddleOCR-based text extraction with downscaling.
+"""RapidOCR-based text extraction with downscaling.
 
-PaddleOCR is loaded lazily on first use to keep startup fast and to allow
-unit tests to run without the heavy paddlepaddle dependency installed. The
-model is held in a module-level singleton — initialising it twice would
-double our memory footprint.
+RapidOCR is a fork of PaddleOCR that runs on ONNX Runtime instead of
+PaddlePaddle — same recognition quality, ~50 MB instead of 250+ MB,
+and no native deps that break under PyInstaller. The model is loaded
+lazily on first use to keep startup fast.
 """
 
 from __future__ import annotations
@@ -20,12 +20,26 @@ _ocr: Any | None = None
 _ocr_unavailable = False
 
 
-def _get_ocr() -> Any | None:
-    """Return the cached PaddleOCR instance, or None if it cannot be loaded.
+def is_available() -> bool:
+    """Cheap probe — returns True iff OCR is initialised or initialisable."""
+    if _ocr is not None:
+        return True
+    if _ocr_unavailable:
+        return False
+    try:
+        import rapidocr_onnxruntime  # noqa: F401
 
-    The first call lazily imports paddleocr. If that fails (missing
-    dependency, init error), we cache the failure and return None on every
-    subsequent call so the capture loop keeps running without text.
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _get_ocr() -> Any | None:
+    """Return the cached RapidOCR instance, or None if it cannot be loaded.
+
+    First call lazily imports rapidocr_onnxruntime. Failure is cached so
+    the capture loop keeps running without text and we don't pay the
+    import penalty every tick.
     """
     global _ocr, _ocr_unavailable
     if _ocr is not None:
@@ -33,22 +47,22 @@ def _get_ocr() -> Any | None:
     if _ocr_unavailable:
         return None
     try:
-        from paddleocr import PaddleOCR
+        from rapidocr_onnxruntime import RapidOCR
 
-        _ocr = PaddleOCR(use_angle_cls=False, lang="en", use_gpu=False, show_log=False)
-        logger.info("PaddleOCR initialised (CPU mode)")
-    except Exception as exc:  # noqa: BLE001 — any failure → degraded mode
+        _ocr = RapidOCR()
+        logger.info("RapidOCR initialised (ONNX, CPU)")
+    except Exception as exc:  # noqa: BLE001
         _ocr_unavailable = True
-        logger.warning("PaddleOCR unavailable, OCR disabled: %s", exc)
+        logger.warning("OCR unavailable, disabled: %s", exc)
         return None
     return _ocr
 
 
 def _downscale_to_width(screenshot: Screenshot, target_width: int) -> Any:
-    """Convert raw BGRA bytes to a PIL Image scaled to `target_width`.
+    """Convert raw BGRA bytes to a numpy array scaled to `target_width`.
 
-    Returns a numpy ndarray suitable for PaddleOCR. Lazy-imports PIL+numpy
-    so test environments that don't have them stay green.
+    Returns an ndarray suitable for RapidOCR (`H × W × 3`, BGR or RGB).
+    Lazy-imports PIL+numpy so test environments without them stay green.
     """
     import numpy as np
     from PIL import Image
@@ -62,24 +76,24 @@ def _downscale_to_width(screenshot: Screenshot, target_width: int) -> Any:
 
 
 def extract_text(screenshot: Screenshot, *, downscale_width: int = 1280) -> str:
-    """Run PaddleOCR on the screenshot and return concatenated text.
+    """Run OCR on the screenshot and return concatenated text.
 
-    Returns an empty string if PaddleOCR is not available, the screenshot
-    has no recognisable text, or the OCR call fails. The caller is expected
-    to handle empty strings gracefully.
+    Returns an empty string if OCR is unavailable, the screenshot has
+    no recognisable text, or the OCR call fails. Caller handles empty.
     """
     ocr = _get_ocr()
     if ocr is None:
         return ""
     try:
         arr = _downscale_to_width(screenshot, downscale_width)
-        result = ocr.ocr(arr, cls=False)
-    except Exception as exc:  # noqa: BLE001 — degraded mode rather than crash
+        result, _elapse = ocr(arr)
+    except Exception as exc:  # noqa: BLE001
         logger.warning("OCR extraction failed: %s", exc)
         return ""
-    if not result or not result[0]:
+    if not result:
         return ""
-    return " ".join(line[1][0] for line in result[0] if line and line[1])
+    # RapidOCR returns: [[bbox, text, score], ...]
+    return " ".join(line[1] for line in result if line and len(line) >= 2 and line[1])
 
 
 def reset_for_test() -> None:

@@ -9,7 +9,15 @@ import type { Client, Project } from '../../models';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <h1>Projects</h1>
+    <div class="row" style="justify-content: space-between; align-items: baseline; margin-bottom: 1rem">
+      <h1 style="margin: 0">Projects</h1>
+      <button class="ghost" (click)="reclassify()" [disabled]="reclassifying()">
+        {{ reclassifying() ? 'Re-classifying…' : 'Re-classify history' }}
+      </button>
+    </div>
+    <p *ngIf="reclassifyResult() as r" class="muted" style="margin: -0.5rem 0 1rem">
+      Scanned {{ r.scanned }}, matched {{ r.matched }}, unchanged {{ r.unchanged }}.
+    </p>
 
     <div class="card" style="margin-bottom:1rem">
       <h3>New project</h3>
@@ -125,6 +133,8 @@ export class ProjectsPageComponent implements OnInit {
   clients = signal<Client[]>([]);
   draft: Partial<Project> = { color: '#3B82F6', currency: 'USD', is_active: true, match_keywords: '' };
   error = signal<string | null>(null);
+  reclassifying = signal(false);
+  reclassifyResult = signal<{ scanned: number; matched: number; unchanged: number } | null>(null);
 
   ngOnInit(): void {
     this.reload();
@@ -170,5 +180,21 @@ export class ProjectsPageComponent implements OnInit {
   formatHours(secs: number): string {
     const h = secs / 3600;
     return `${h.toFixed(1)} h`;
+  }
+
+  reclassify(): void {
+    this.reclassifying.set(true);
+    this.reclassifyResult.set(null);
+    this.api.reclassifyAll().subscribe({
+      next: (r) => {
+        this.reclassifyResult.set(r);
+        this.reclassifying.set(false);
+        this.reload();
+      },
+      error: (err) => {
+        this.error.set(err.error?.detail || err.message);
+        this.reclassifying.set(false);
+      },
+    });
   }
 }
