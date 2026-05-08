@@ -38,31 +38,40 @@ owns the tray.
 
 ## Build distributables
 
-The Electron installer needs the PyInstaller-built backend at
-`../dist/Tickwise/`. Build that first, then run electron-builder:
+**One command.** From the `electron/` directory:
 
 ```powershell
-# 1. Build the Python backend
-.\.venv\Scripts\python.exe -m PyInstaller packaging\tickwise.spec --clean --noconfirm
-
-# 2. Refresh icons (optional — only when the brand SVG changes)
-.\.venv\Scripts\python.exe packaging\generate_icons.py
-
-# 3. Bundle the Electron app
-cd electron
-npm run build:win        # → dist-electron/Tickwise-Setup-1.0.0.exe + portable .exe
-# or:
-# npm run build:mac      # universal .dmg (requires macOS host)
-# npm run build:linux    # AppImage (requires Linux host)
+npm install         # one-time
+npm run build:win   # → ../dist-electron/Tickwise-Setup-1.0.0.exe + portable .exe
+# npm run build:mac   # universal .dmg (run on macOS)
+# npm run build:linux # AppImage (run on Linux)
 ```
 
-The bundled installer ships:
+`npm run build:win|mac|linux` runs `scripts/build-backend.js` first,
+which invokes PyInstaller in the repo's venv to produce
+`../dist/Tickwise/`. electron-builder then picks that directory up via
+`extraResources` and bundles it inside the installer alongside the
+Electron shell.
 
-- The Electron renderer + main process
-- Tickwise.exe + its `_internal/` (Python runtime, dashboard, dependencies)
-  copied into `resources/tickwise-backend/` via `extraResources`
+The single installer ships:
 
-Total Windows installer size is roughly 100–120 MB.
+- The Electron main + renderer process
+- The PyInstaller backend (Python 3.12 runtime, FastAPI, RapidOCR with
+  ONNX models, Angular dashboard, all dependencies) copied into
+  `resources/tickwise-backend/`
+- Brand icons + loading splash
+
+Total Windows installer is roughly 250–270 MB (the OCR models account
+for ~150 MB of that — they ship pre-bundled so the user gets working
+classification on a clean install with zero extra downloads).
+
+If you only need to rebuild the Electron shell while iterating on
+`main.js` / `loading.html` and the backend at `../dist/Tickwise/` is
+already up-to-date, skip the PyInstaller step:
+
+```powershell
+node scripts/build-backend.js --skip-backend && npx electron-builder --win nsis --x64
+```
 
 ## How it talks to the backend
 

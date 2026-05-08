@@ -49,61 +49,70 @@ Tickwise stays on your laptop. It watches the active window, asks the browser ex
 
 | Platform | Installer | Notes |
 | -------- | --------- | ----- |
-| Windows x64 | [Download Tickwise-Setup.exe →](https://github.com/code-lodge/tickwise/releases/latest) | Windows 10 / 11. Tray app + bundled dashboard |
-| macOS | _coming soon_ | Apple Silicon + Intel |
+| Windows x64 | [Download Tickwise-Setup.exe →](https://github.com/code-lodge/tickwise/releases/latest) | Windows 10 / 11. NSIS installer or portable |
+| macOS | _coming soon_ | Apple Silicon + Intel DMG |
 | Linux | _coming soon_ | AppImage |
 
 > **First-launch:** the binaries are not yet code-signed. Windows SmartScreen will warn — click *More info → Run anyway*.
 
-Double-click to launch. The tray icon appears, the dashboard opens at <http://127.0.0.1:19532/>, and a fresh SQLite database is created at `%APPDATA%\Tickwise\tickwise.db` on first run.
+Double-click `Tickwise-Setup.exe` to install. Launch from the Start Menu —
+the dashboard opens in its own native window (no browser tab), the tray
+icon appears, and a fresh SQLite database is created at
+`%APPDATA%\Tickwise\tickwise.db` on first run.
+
+There is exactly one user-facing artifact: the Electron-built installer
+above. The Python backend, the Angular dashboard, the OCR models and
+the system-tray UX are all bundled inside it. You don't install Python
+and you don't install Node.js to use Tickwise.
 
 ### Build from source
 
-You will need Python 3.12+ and Node.js 20+.
+You'll need **Python 3.12+** and **Node.js 20+**. One command builds the
+whole stack — `npm run build:win` from the `electron/` directory runs
+the Python backend through PyInstaller, then wraps it in the Electron
+installer:
 
 ```powershell
 git clone https://github.com/code-lodge/tickwise
 cd tickwise
 
+# Install backend deps (one-time)
 python -m venv .venv
-.\.venv\Scripts\pip install -e .
+.\.venv\Scripts\pip install -e . pyinstaller
 
-# Build the dashboard once (Angular)
+# Build the dashboard (one-time, or after Angular changes)
 Push-Location dashboard ; npm install ; .\node_modules\.bin\ng build ; Pop-Location
 Copy-Item dashboard\dist\tickwise-dashboard\browser\* tickwise\static -Recurse -Force
 
-# Run the tray app
-.\.venv\Scripts\pythonw.exe -m tickwise
-```
-
-Dev workflow: run `python -m tickwise` for the backend, then `cd dashboard && ng serve --proxy-config proxy.conf.json` for hot-reload at <http://localhost:4200>.
-
-### Build the .exe (PyInstaller — service binary)
-
-```powershell
-.\.venv\Scripts\pip install pyinstaller
-.\.venv\Scripts\python.exe -m PyInstaller packaging\tickwise.spec --clean --noconfirm
-# → dist\Tickwise\Tickwise.exe   (tray app + bundled dashboard)
-```
-
-### Build the desktop installer (Electron wrapper)
-
-The Electron wrapper opens the dashboard in a native window instead of a
-browser tab and bundles the PyInstaller backend inside its installer.
-
-```powershell
-# 1. Build the Python backend (above)
-# 2. Generate icons (only needed once, or after brand changes)
-.\.venv\Scripts\python.exe packaging\generate_icons.py
-
-# 3. Bundle the Electron app
+# One-shot installer build → dist-electron\Tickwise-Setup-1.0.0.exe
 cd electron
 npm install
-npm run build:win   # → dist-electron\Tickwise-Setup-1.0.0.exe + portable .exe
+npm run build:win
 ```
 
-See [electron/README.md](electron/README.md) for cross-platform builds
-and how the wrapper talks to the backend.
+`npm run build:win` runs `electron/scripts/build-backend.js` first
+(invokes PyInstaller from the venv) before electron-builder picks up
+the result via `extraResources`. The output is **a single installer**
+that ships the Python service, dashboard, OCR models and Electron
+shell as one package.
+
+Cross-platform: `npm run build:mac` (universal DMG) and
+`npm run build:linux` (AppImage) follow the same pattern from a
+matching host. See [electron/README.md](electron/README.md) for the
+detailed build pipeline.
+
+### Dev mode
+
+For hot-reload while you're hacking on the dashboard:
+
+```powershell
+.\.venv\Scripts\python.exe -m tickwise        # backend on :19532, brings up the tray
+cd dashboard ; ng serve --proxy-config proxy.conf.json   # Angular hot-reload on :4200
+```
+
+In dev mode the Python pystray icon shows up directly (no Electron
+wrapper). Right-clicking *Open Dashboard* falls back to your default
+browser if the Electron app isn't installed.
 
 ---
 
