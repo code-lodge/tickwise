@@ -12,6 +12,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from tickwise import __version__, runtime
+from tickwise.api.routes_backup import router as backup_router
 from tickwise.api.routes_calendar import router as calendar_router
 from tickwise.api.routes_categories import router as categories_router
 from tickwise.api.routes_clients import router as clients_router
@@ -20,6 +21,7 @@ from tickwise.api.routes_invoices import router as invoices_router
 from tickwise.api.routes_llm import router as llm_router
 from tickwise.api.routes_mobile import router as mobile_router
 from tickwise.api.routes_monitors import router as monitors_router
+from tickwise.api.routes_onboarding import router as onboarding_router
 from tickwise.api.routes_pairing import router as pairing_router
 from tickwise.api.routes_pomodoro import router as pomodoro_router
 from tickwise.api.routes_profile import router as profile_router
@@ -82,6 +84,8 @@ def create_app() -> FastAPI:
     app.include_router(pairing_router)
     app.include_router(mobile_router)
     app.include_router(monitors_router)
+    app.include_router(onboarding_router)
+    app.include_router(backup_router)
     app.include_router(ws_router)
 
     @app.get("/api/status", tags=["meta"])
