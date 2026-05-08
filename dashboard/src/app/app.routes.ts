@@ -47,6 +47,13 @@ export const routes: Routes = [
       import('./pages/pomodoro/pomodoro.component').then((m) => m.PomodoroPageComponent),
   },
   {
+    path: 'mobile',
+    loadComponent: () =>
+      import('./pages/mobile-pairing/mobile-pairing.component').then(
+        (m) => m.MobilePairingPageComponent,
+      ),
+  },
+  {
     path: 'settings',
     loadComponent: () =>
       import('./pages/settings/settings.component').then((m) => m.SettingsPageComponent),
