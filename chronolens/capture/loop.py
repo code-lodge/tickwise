@@ -207,14 +207,19 @@ class CaptureLoop:
         captured_at: datetime,
     ) -> int | None:
         snippet = ocr_text[:200] if ocr_text else None
+        from chronolens import runtime
+
+        timer = runtime.get_pomodoro_timer()
+        pomodoro_session_id = timer.current_focus_session_id() if timer else None
         try:
             with transaction() as conn:
                 cur = conn.execute(
                     """
                     INSERT INTO activities
                         (captured_at, window_title, process_name, ocr_text,
-                         redacted_text, phash, change_detected, source)
-                    VALUES (?, ?, ?, ?, ?, ?, 1, 'pending_classification')
+                         redacted_text, phash, change_detected, source,
+                         pomodoro_session_id)
+                    VALUES (?, ?, ?, ?, ?, ?, 1, 'pending_classification', ?)
                     """,
                     (
                         captured_at.isoformat(),
@@ -223,6 +228,7 @@ class CaptureLoop:
                         snippet,
                         snippet,
                         phash or None,
+                        pomodoro_session_id,
                     ),
                 )
                 lastrow = cur.lastrowid

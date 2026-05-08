@@ -12,6 +12,7 @@ from chronolens.capture.loop import CaptureLoop
 from chronolens.classification.pipeline import ClassificationWorker
 from chronolens.config import API_HOST, API_PORT
 from chronolens.db.schema import init_db
+from chronolens.pomodoro.timer import PomodoroTimer
 from chronolens.sessions.tracker import SessionTracker
 from chronolens.tray import run_tray
 
@@ -61,6 +62,10 @@ def main() -> None:
     classifier = ClassificationWorker()
     classifier.start()
 
+    pomodoro = PomodoroTimer()
+    runtime.set_pomodoro_timer(pomodoro)
+    pomodoro.start_thread()
+
     _start_api_server()
     logger.info("API server starting on http://%s:%d", API_HOST, API_PORT)
 
@@ -68,6 +73,7 @@ def main() -> None:
         logger.info("Quit requested — shutting down")
         loop.stop()
         classifier.stop()
+        pomodoro.stop_thread()
         tracker.flush()
         _shutdown_event.set()
 

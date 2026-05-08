@@ -46,10 +46,19 @@ _COLOR_TRACKING = "#22C55E"  # green
 _COLOR_PAUSED = "#EAB308"  # yellow
 _COLOR_IDLE = "#9CA3AF"  # gray
 _COLOR_NEUTRAL = "#3B82F6"  # blue (pre-startup)
+_COLOR_FOCUS = "#EF4444"  # red — pomodoro focus
+_COLOR_BREAK = "#06B6D4"  # cyan — pomodoro break
 
 
 def _icon_color() -> str:
     """Pick the tray icon colour from the current runtime state."""
+    timer = runtime.get_pomodoro_timer()
+    if timer is not None:
+        snap = timer.snapshot()
+        if snap.state.value == "focus":
+            return _COLOR_FOCUS
+        if snap.state.value in ("short_break", "long_break"):
+            return _COLOR_BREAK
     loop = runtime.get_capture_loop()
     if loop is None or not loop.is_running:
         return _COLOR_NEUTRAL
@@ -89,6 +98,16 @@ def build_status_text() -> str:
 
     Pure function over `runtime` getters — exposed for tests.
     """
+    timer = runtime.get_pomodoro_timer()
+    if timer is not None:
+        snap = timer.snapshot()
+        if snap.state.value != "idle":
+            label = {
+                "focus": "Focus",
+                "short_break": "Short break",
+                "long_break": "Long break",
+            }.get(snap.state.value, snap.state.value)
+            return f"ChronoLens — {label} · {_format_duration(snap.remaining_secs)} left"
     loop = runtime.get_capture_loop()
     tracker = runtime.get_session_tracker()
     if loop is None or not loop.is_running:
@@ -139,6 +158,21 @@ def run_tray(on_quit: Callable[[], None]) -> None:
         loop = runtime.get_capture_loop()
         return bool(loop and loop.is_paused)
 
+    def _toggle_focus(_icon: Any, _item: Any) -> None:
+        timer = runtime.get_pomodoro_timer()
+        if timer is None:
+            return
+        if timer.snapshot().state.value == "idle":
+            timer.start_focus()
+        else:
+            timer.stop()
+
+    def _focus_label(_item: Any) -> str:
+        timer = runtime.get_pomodoro_timer()
+        if timer is None:
+            return "Start Focus"
+        return "Stop Pomodoro" if timer.snapshot().state.value != "idle" else "Start Focus"
+
     def _quit_action(icon: Any, _item: Any) -> None:
         icon.stop()
         on_quit()
@@ -156,6 +190,7 @@ def run_tray(on_quit: Callable[[], None]) -> None:
                 lambda _item: "Resume Tracking" if _is_paused(_item) else "Pause Tracking",
                 _toggle_pause,
             ),
+            pystray.MenuItem(_focus_label, _toggle_focus),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Quit", _quit_action),
         ),
