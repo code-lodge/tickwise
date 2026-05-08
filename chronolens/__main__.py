@@ -7,8 +7,11 @@ import threading
 
 import uvicorn
 
+from chronolens import runtime
+from chronolens.capture.loop import CaptureLoop
 from chronolens.config import API_HOST, API_PORT
 from chronolens.db.schema import init_db
+from chronolens.sessions.tracker import SessionTracker
 from chronolens.tray import run_tray
 
 logging.basicConfig(
@@ -40,15 +43,27 @@ def _start_api_server() -> threading.Thread:
 
 
 def main() -> None:
-    """Initialise the database, start the API server, then enter the tray loop."""
+    """Initialise the DB, start API + capture loop, then enter the tray loop."""
     logger.info("ChronoLens starting up")
     init_db()
+
+    tracker = SessionTracker()
+    runtime.set_session_tracker(tracker)
+
+    loop = CaptureLoop(
+        on_session_extend=tracker.extend,
+        on_session_change=tracker.on_change,
+    )
+    runtime.set_capture_loop(loop)
+    loop.start()
 
     _start_api_server()
     logger.info("API server starting on http://%s:%d", API_HOST, API_PORT)
 
     def on_quit() -> None:
         logger.info("Quit requested — shutting down")
+        loop.stop()
+        tracker.flush()
         _shutdown_event.set()
 
     run_tray(on_quit)

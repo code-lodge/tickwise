@@ -51,6 +51,8 @@ module = [
     "icalendar.*",
     "weasyprint.*",
     "apscheduler.*",
+    "numpy.*",
+    "psutil.*",
 ]
 ignore_missing_imports = true
 

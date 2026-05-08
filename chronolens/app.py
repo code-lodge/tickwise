@@ -8,7 +8,8 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from chronolens import __version__
+from chronolens import __version__, runtime
+from chronolens.api.routes_sessions import router as sessions_router
 from chronolens.api.routes_settings import router as settings_router
 from chronolens.api.websocket import router as ws_router
 from chronolens.config import API_HOST, API_PORT
@@ -45,6 +46,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(settings_router)
+    app.include_router(sessions_router)
     app.include_router(ws_router)
 
     @app.get("/api/status", tags=["meta"])
@@ -54,11 +56,13 @@ def create_app() -> FastAPI:
         Returns:
             Dict with status, version, uptime_secs, and tracking state.
         """
+        loop = runtime.get_capture_loop()
+        tracking = bool(loop and loop.is_running and not loop.is_paused)
         return {
             "status": "ok",
             "version": __version__,
             "uptime_secs": int(time.time() - _start_time),
-            "tracking": False,
+            "tracking": tracking,
         }
 
     return app
