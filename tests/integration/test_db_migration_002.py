@@ -31,4 +31,4 @@ class TestActivitiesSourceColumn:
     def test_schema_version_advanced(self, tmp_db: Path) -> None:
         conn = get_connection()
         row = conn.execute("SELECT MAX(version) AS v FROM schema_version").fetchone()
-        assert row["v"] == 2
+        assert row["v"] >= 2

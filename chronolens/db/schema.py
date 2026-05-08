@@ -11,7 +11,7 @@ from chronolens.db.connection import get_connection
 logger = logging.getLogger(__name__)
 
 # Current schema version — bump when adding migrations.
-SCHEMA_VERSION: int = 2
+SCHEMA_VERSION: int = 3
 
 # ─── DDL ─────────────────────────────────────────────────────────────────────
 
@@ -63,6 +63,9 @@ CREATE TABLE IF NOT EXISTS activities (
     privacy_level   INTEGER NOT NULL DEFAULT 2,
     change_detected INTEGER NOT NULL DEFAULT 0,
     source          TEXT NOT NULL DEFAULT 'pending_classification',
+    project_id      INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+    category_id     INTEGER REFERENCES task_categories(id) ON DELETE SET NULL,
+    confidence      REAL,
     created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
@@ -185,6 +188,10 @@ CREATE TABLE IF NOT EXISTS llm_config (
     api_key_ref     TEXT,
     temperature     REAL NOT NULL DEFAULT 0.1,
     max_tokens      INTEGER NOT NULL DEFAULT 256,
+    monthly_budget_cents INTEGER NOT NULL DEFAULT 0,
+    monthly_spent_cents REAL NOT NULL DEFAULT 0,
+    budget_reset_day INTEGER NOT NULL DEFAULT 1,
+    is_active       INTEGER NOT NULL DEFAULT 1,
     updated_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
@@ -196,7 +203,10 @@ CREATE TABLE IF NOT EXISTS llm_usage_log (
     prompt_tokens   INTEGER NOT NULL DEFAULT 0,
     completion_tokens INTEGER NOT NULL DEFAULT 0,
     cost_usd        REAL NOT NULL DEFAULT 0,
+    cost_cents      REAL NOT NULL DEFAULT 0,
     latency_ms      INTEGER,
+    cache_hit       INTEGER NOT NULL DEFAULT 0,
+    classification_success INTEGER NOT NULL DEFAULT 1,
     created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
@@ -207,6 +217,9 @@ CREATE TABLE IF NOT EXISTS classification_cache (
     category_id     INTEGER REFERENCES task_categories(id) ON DELETE SET NULL,
     description     TEXT,
     confidence      REAL,
+    llm_response    TEXT,
+    hit_count       INTEGER NOT NULL DEFAULT 1,
+    last_hit_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     expires_at      TEXT NOT NULL
 );
@@ -214,7 +227,9 @@ CREATE TABLE IF NOT EXISTS classification_cache (
 CREATE TABLE IF NOT EXISTS custom_redaction_rules (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     pattern         TEXT NOT NULL,
+    match_mode      TEXT NOT NULL DEFAULT 'contains' CHECK(match_mode IN ('contains', 'regex', 'exact')),
     replacement     TEXT NOT NULL DEFAULT '[REDACTED]',
+    description     TEXT,
     is_regex        INTEGER NOT NULL DEFAULT 0,
     is_active       INTEGER NOT NULL DEFAULT 1,
     created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
@@ -223,7 +238,12 @@ CREATE TABLE IF NOT EXISTS custom_redaction_rules (
 CREATE TABLE IF NOT EXISTS redaction_log (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     activity_id     INTEGER REFERENCES activities(id) ON DELETE CASCADE,
-    rule_type       TEXT NOT NULL,
+    privacy_level   INTEGER,
+    original_length INTEGER,
+    redacted_length INTEGER,
+    redaction_count INTEGER NOT NULL DEFAULT 0,
+    categories_hit  TEXT,
+    rule_type       TEXT,
     match_count     INTEGER NOT NULL DEFAULT 0,
     created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
@@ -316,7 +336,77 @@ def _migration_002_add_activity_source(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_ended_at ON sessions(ended_at)")
 
 
+def _add_column_if_missing(conn: sqlite3.Connection, table: str, column: str, ddl: str) -> None:
+    """Idempotently add a column to a table; no-op if it already exists."""
+    cols = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
+    if column not in cols:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
+
+
+def _migration_003_classification_columns(conn: sqlite3.Connection) -> None:
+    """Phase 3 — extend tables for the LLM classification pipeline."""
+    # activities → carries the per-tick classification result.
+    _add_column_if_missing(
+        conn, "activities", "project_id", "project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL"
+    )
+    _add_column_if_missing(
+        conn,
+        "activities",
+        "category_id",
+        "category_id INTEGER REFERENCES task_categories(id) ON DELETE SET NULL",
+    )
+    _add_column_if_missing(conn, "activities", "confidence", "confidence REAL")
+
+    # llm_config → budget tracking + activation.
+    _add_column_if_missing(
+        conn, "llm_config", "monthly_budget_cents", "monthly_budget_cents INTEGER NOT NULL DEFAULT 0"
+    )
+    _add_column_if_missing(conn, "llm_config", "monthly_spent_cents", "monthly_spent_cents REAL NOT NULL DEFAULT 0")
+    _add_column_if_missing(conn, "llm_config", "budget_reset_day", "budget_reset_day INTEGER NOT NULL DEFAULT 1")
+    _add_column_if_missing(conn, "llm_config", "is_active", "is_active INTEGER NOT NULL DEFAULT 1")
+
+    # llm_usage_log → cache + outcome tracking.
+    _add_column_if_missing(conn, "llm_usage_log", "cost_cents", "cost_cents REAL NOT NULL DEFAULT 0")
+    _add_column_if_missing(conn, "llm_usage_log", "cache_hit", "cache_hit INTEGER NOT NULL DEFAULT 0")
+    _add_column_if_missing(
+        conn,
+        "llm_usage_log",
+        "classification_success",
+        "classification_success INTEGER NOT NULL DEFAULT 1",
+    )
+
+    # classification_cache → hit tracking + raw response for debug.
+    _add_column_if_missing(conn, "classification_cache", "llm_response", "llm_response TEXT")
+    _add_column_if_missing(conn, "classification_cache", "hit_count", "hit_count INTEGER NOT NULL DEFAULT 1")
+    _add_column_if_missing(
+        conn,
+        "classification_cache",
+        "last_hit_at",
+        "last_hit_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))",
+    )
+
+    # custom_redaction_rules → match_mode + description.
+    _add_column_if_missing(
+        conn,
+        "custom_redaction_rules",
+        "match_mode",
+        "match_mode TEXT NOT NULL DEFAULT 'contains'",
+    )
+    _add_column_if_missing(conn, "custom_redaction_rules", "description", "description TEXT")
+
+    # redaction_log → richer transparency stats.
+    _add_column_if_missing(conn, "redaction_log", "privacy_level", "privacy_level INTEGER")
+    _add_column_if_missing(conn, "redaction_log", "original_length", "original_length INTEGER")
+    _add_column_if_missing(conn, "redaction_log", "redacted_length", "redacted_length INTEGER")
+    _add_column_if_missing(conn, "redaction_log", "redaction_count", "redaction_count INTEGER NOT NULL DEFAULT 0")
+    _add_column_if_missing(conn, "redaction_log", "categories_hit", "categories_hit TEXT")
+
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_activities_project_id ON activities(project_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_llm_usage_log_created_at ON llm_usage_log(created_at)")
+
+
 _MIGRATIONS: list[tuple[int, Callable[[sqlite3.Connection], None]]] = [
     (1, _migration_001_seed_defaults),
     (2, _migration_002_add_activity_source),
+    (3, _migration_003_classification_columns),
 ]

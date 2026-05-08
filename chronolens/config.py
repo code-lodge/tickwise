@@ -40,6 +40,8 @@ DEFAULTS: Final[dict[str, object]] = {
     "privacy_level": 2,
     # LLM cache
     "cache_ttl_hours": 24,
+    # LLM redaction
+    "redaction_max_chars": 800,
     # Pomodoro
     "pomodoro_work_minutes": 25,
     "pomodoro_short_break_minutes": 5,

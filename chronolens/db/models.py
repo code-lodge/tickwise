@@ -50,6 +50,9 @@ class Activity(BaseModel):
     privacy_level: int = 2
     change_detected: bool = False
     source: str = "pending_classification"
+    project_id: int | None = None
+    category_id: int | None = None
+    confidence: float | None = None
     created_at: datetime | None = None
 
 
@@ -144,6 +147,10 @@ class LLMConfig(BaseModel):
     api_key_ref: str | None = None
     temperature: float = 0.1
     max_tokens: int = 256
+    monthly_budget_cents: int = 0
+    monthly_spent_cents: float = 0.0
+    budget_reset_day: int = 1
+    is_active: bool = True
     updated_at: datetime | None = None
 
 
@@ -154,6 +161,9 @@ class ClassificationCache(BaseModel):
     category_id: int | None = None
     description: str | None = None
     confidence: float | None = None
+    llm_response: str | None = None
+    hit_count: int = 1
+    last_hit_at: datetime | None = None
     created_at: datetime | None = None
     expires_at: datetime
 
@@ -161,7 +171,9 @@ class ClassificationCache(BaseModel):
 class CustomRedactionRule(BaseModel):
     id: int | None = None
     pattern: str
+    match_mode: Literal["contains", "regex", "exact"] = "contains"
     replacement: str = "[REDACTED]"
+    description: str | None = None
     is_regex: bool = False
     is_active: bool = True
     created_at: datetime | None = None
