@@ -50,6 +50,7 @@ class TestCaptureLoopTick:
                 return_value=WindowInfo(title="VS Code", process_name="code.exe", pid=1),
             ),
             patch.object(loop, "_safe_capture", return_value=_solid_screenshot()),
+            patch.object(loop, "_safe_capture_all", return_value={1: _solid_screenshot()}),
         ):
             changed = loop.tick_once()
 
@@ -81,6 +82,7 @@ class TestCaptureLoopTick:
             patch("chronolens.capture.loop.get_idle_seconds", return_value=0.0),
             patch("chronolens.capture.loop.get_active_window", return_value=win),
             patch.object(loop, "_safe_capture", return_value=_solid_screenshot()),
+            patch.object(loop, "_safe_capture_all", return_value={1: _solid_screenshot()}),
         ):
             assert loop.tick_once() is True  # first sample = change
             assert loop.tick_once() is False  # same screenshot = no change
@@ -113,6 +115,7 @@ class TestCaptureLoopTick:
                 return_value=WindowInfo(title="X", process_name="x", pid=1),
             ),
             patch.object(loop, "_safe_capture", return_value=None),
+            patch.object(loop, "_safe_capture_all", return_value={1: _solid_screenshot()}),
         ):
             # Title change still fires even without a screenshot.
             assert loop.tick_once() is True
@@ -122,6 +125,7 @@ class TestCaptureLoopTick:
         with (
             patch("chronolens.capture.loop.get_idle_seconds", return_value=0.0),
             patch.object(loop, "_safe_capture", return_value=_solid_screenshot()),
+            patch.object(loop, "_safe_capture_all", return_value={1: _solid_screenshot()}),
         ):
             with patch(
                 "chronolens.capture.loop.get_active_window",

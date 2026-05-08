@@ -46,6 +46,8 @@ class TestCaptureLoopThread:
 
         fake_capturer = MagicMock()
         fake_capturer.capture_primary.return_value = _solid_screenshot()
+        fake_capturer.list_monitors.return_value = []
+        fake_capturer.capture_all.return_value = {1: _solid_screenshot()}
 
         windows = [
             WindowInfo(title="A", process_name="p", pid=1),
@@ -85,6 +87,8 @@ class TestCaptureLoopThread:
         loop = CaptureLoop(tick_seconds=0.02, ocr_runner=lambda _s, _w: "")
         fake_capturer = MagicMock()
         fake_capturer.capture_primary.return_value = _solid_screenshot()
+        fake_capturer.list_monitors.return_value = []
+        fake_capturer.capture_all.return_value = {1: _solid_screenshot()}
 
         with (
             patch("chronolens.capture.loop.ScreenCapturer", return_value=fake_capturer),

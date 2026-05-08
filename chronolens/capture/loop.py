@@ -26,8 +26,8 @@ from typing import cast
 
 from chronolens.capture.change_detector import ChangeState, detect_change
 from chronolens.capture.idle_detector import get_idle_seconds
-from chronolens.capture.screenshot import ScreenCapturer, Screenshot
-from chronolens.capture.window_info import WindowInfo, get_active_window
+from chronolens.capture.screenshot import MonitorInfo, ScreenCapturer, Screenshot
+from chronolens.capture.window_info import WindowInfo, get_active_window, get_window_center
 from chronolens.classification.queue import ClassificationJob, submit
 from chronolens.config import DEFAULTS
 from chronolens.db.connection import transaction
@@ -71,8 +71,11 @@ class CaptureLoop:
         self._stop = threading.Event()
         self._paused = threading.Event()
         self._thread: threading.Thread | None = None
-        self._state = ChangeState()
+        # One change-state per monitor index so a focus switch picks up
+        # exactly where it left off.
+        self._states: dict[int, ChangeState] = {}
         self._capturer: ScreenCapturer | None = None
+        self._last_focused_index: int = 1
         self.tick_count = 0
         self.last_window: WindowInfo = WindowInfo(title="", process_name="", pid=None)
         self.last_idle_seconds: float = 0.0
@@ -134,21 +137,44 @@ class CaptureLoop:
         window = get_active_window()
         self.last_window = window
 
-        screenshot = self._safe_capture()
+        shots = self._safe_capture_all()
+        if not shots:
+            return False
+
+        focused_index = self._pick_focused_monitor(shots)
+        self._refresh_secondary_hashes(shots, focused_index)
+        focus_changed = focused_index != self._last_focused_index
+        self._last_focused_index = focused_index
+
+        screenshot = shots.get(focused_index)
         from chronolens.capture import browser_bridge
 
         browser_ctx = browser_bridge.latest()
         url_for_change = browser_ctx.url if browser_ctx and browser_ctx.url else ""
+        state = self._states.setdefault(focused_index, ChangeState())
         result = detect_change(
             screenshot,
             window.title,
             window.process_name,
             url=url_for_change,
-            state=self._state,
+            state=state,
             phash_threshold=self._phash_threshold,
         )
 
-        if not result.changed:
+        # A focus switch onto a different monitor counts as a change even
+        # if the screen contents on that monitor haven't changed since last
+        # we saw it — the *focus* moved.
+        if focus_changed and not result.changed:
+            result = detect_change(
+                screenshot,
+                window.title,
+                window.process_name,
+                url=url_for_change,
+                state=state,
+                phash_threshold=self._phash_threshold,
+            )
+
+        if not result.changed and not focus_changed:
             logger.debug("no change, skipping OCR")
             if self._on_extend is not None:
                 self._on_extend(window, now)
@@ -158,7 +184,7 @@ class CaptureLoop:
         if screenshot is not None:
             ocr_text = self._ocr_runner(screenshot, self._ocr_width)
 
-        activity_id = self._persist_activity(window, ocr_text, result.phash, now)
+        activity_id = self._persist_activity(window, ocr_text, result.phash, now, focused_index)
         submit(
             ClassificationJob(
                 activity_id=activity_id or 0,
@@ -173,6 +199,41 @@ class CaptureLoop:
         if self._on_change is not None:
             self._on_change(window, now)
         return True
+
+    def _pick_focused_monitor(self, shots: dict[int, Screenshot]) -> int:
+        """Return the monitor index covering the active window's centre.
+
+        Falls back to the previously-focused monitor (or the lowest available
+        index) when the platform can't tell us where the window is.
+        """
+        if len(shots) == 1:
+            return next(iter(shots))
+        center = get_window_center()
+        if center is not None and self._capturer is not None:
+            for monitor in self._capturer.list_monitors():
+                if monitor.index in shots and monitor.contains(*center):
+                    return monitor.index
+        if self._last_focused_index in shots:
+            return self._last_focused_index
+        return min(shots)
+
+    def _refresh_secondary_hashes(self, shots: dict[int, Screenshot], focused_index: int) -> None:
+        """Run change detection against non-focused monitors so their state stays
+        warm — we don't OCR them, but we want the next focus switch to land on a
+        fresh phash instead of comparing against stale data.
+        """
+        for idx, shot in shots.items():
+            if idx == focused_index:
+                continue
+            state = self._states.setdefault(idx, ChangeState())
+            detect_change(
+                shot,
+                "",
+                "",
+                url="",
+                state=state,
+                phash_threshold=self._phash_threshold,
+            )
 
     # ─── internals ────────────────────────────────────────────────────────
 
@@ -203,12 +264,26 @@ class CaptureLoop:
             logger.exception("screenshot capture failed")
             return None
 
+    def _safe_capture_all(self) -> dict[int, Screenshot]:
+        if self._capturer is None:
+            try:
+                self._capturer = ScreenCapturer()
+            except RuntimeError:
+                return {}
+        try:
+            indices = _enabled_monitor_indices(self._capturer.list_monitors())
+            return self._capturer.capture_all(indices or None)
+        except Exception:
+            logger.exception("multi-monitor capture failed")
+            return {}
+
     def _persist_activity(
         self,
         window: WindowInfo,
         ocr_text: str,
         phash: str,
         captured_at: datetime,
+        monitor_index: int = 1,
     ) -> int | None:
         snippet = ocr_text[:200] if ocr_text else None
         from chronolens import runtime
@@ -222,8 +297,8 @@ class CaptureLoop:
                     INSERT INTO activities
                         (captured_at, window_title, process_name, ocr_text,
                          redacted_text, phash, change_detected, source,
-                         pomodoro_session_id)
-                    VALUES (?, ?, ?, ?, ?, ?, 1, 'pending_classification', ?)
+                         pomodoro_session_id, monitor_index)
+                    VALUES (?, ?, ?, ?, ?, ?, 1, 'pending_classification', ?, ?)
                     """,
                     (
                         captured_at.isoformat(),
@@ -233,6 +308,7 @@ class CaptureLoop:
                         snippet,
                         phash or None,
                         pomodoro_session_id,
+                        monitor_index,
                     ),
                 )
                 lastrow = cur.lastrowid
@@ -240,3 +316,25 @@ class CaptureLoop:
         except Exception:
             logger.exception("failed to persist activity")
             return None
+
+
+def _enabled_monitor_indices(detected: list[MonitorInfo]) -> list[int]:
+    """Filter the detected monitor list against `monitor_preferences`.
+
+    Returns an empty list when *no* monitors are explicitly enabled (treat as
+    'all enabled'); otherwise returns the intersection. Detected monitors not
+    present in preferences are kept by default — new hardware should not stay
+    invisible until the user clicks something.
+    """
+    try:
+        from chronolens.db.connection import get_connection
+
+        prefs = {
+            int(r["monitor_index"]): bool(r["enabled"])
+            for r in get_connection().execute("SELECT monitor_index, enabled FROM monitor_preferences").fetchall()
+        }
+    except Exception:
+        return [m.index for m in detected]
+    if not prefs:
+        return [m.index for m in detected]
+    return [m.index for m in detected if prefs.get(m.index, True)]
