@@ -9,6 +9,7 @@ import uvicorn
 
 from chronolens import runtime
 from chronolens.capture.loop import CaptureLoop
+from chronolens.classification.pipeline import ClassificationWorker
 from chronolens.config import API_HOST, API_PORT
 from chronolens.db.schema import init_db
 from chronolens.sessions.tracker import SessionTracker
@@ -57,12 +58,16 @@ def main() -> None:
     runtime.set_capture_loop(loop)
     loop.start()
 
+    classifier = ClassificationWorker()
+    classifier.start()
+
     _start_api_server()
     logger.info("API server starting on http://%s:%d", API_HOST, API_PORT)
 
     def on_quit() -> None:
         logger.info("Quit requested — shutting down")
         loop.stop()
+        classifier.stop()
         tracker.flush()
         _shutdown_event.set()
 

@@ -9,6 +9,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from chronolens import __version__, runtime
+from chronolens.api.routes_llm import router as llm_router
+from chronolens.api.routes_redaction import router as redaction_router
 from chronolens.api.routes_sessions import router as sessions_router
 from chronolens.api.routes_settings import router as settings_router
 from chronolens.api.websocket import router as ws_router
@@ -47,6 +49,8 @@ def create_app() -> FastAPI:
 
     app.include_router(settings_router)
     app.include_router(sessions_router)
+    app.include_router(redaction_router)
+    app.include_router(llm_router)
     app.include_router(ws_router)
 
     @app.get("/api/status", tags=["meta"])
