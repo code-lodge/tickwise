@@ -58,6 +58,7 @@ module = [
     "Quartz.*",
     "Xlib.*",
     "winreg.*",
+    "qrcode.*",
 ]
 ignore_missing_imports = true
 

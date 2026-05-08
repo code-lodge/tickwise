@@ -18,6 +18,8 @@ from chronolens.api.routes_clients import router as clients_router
 from chronolens.api.routes_cloudflare import router as cloudflare_router
 from chronolens.api.routes_invoices import router as invoices_router
 from chronolens.api.routes_llm import router as llm_router
+from chronolens.api.routes_mobile import router as mobile_router
+from chronolens.api.routes_pairing import router as pairing_router
 from chronolens.api.routes_pomodoro import router as pomodoro_router
 from chronolens.api.routes_profile import router as profile_router
 from chronolens.api.routes_projects import router as projects_router
@@ -29,6 +31,8 @@ from chronolens.api.websocket import router as ws_router
 from chronolens.config import API_HOST, API_PORT
 
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
+_PWA_BUNDLED_DIR = Path(__file__).resolve().parent / "static_mobile"
+_PWA_SOURCE_DIR = Path(__file__).resolve().parent.parent / "mobile"
 
 _start_time = time.time()
 
@@ -74,6 +78,8 @@ def create_app() -> FastAPI:
     app.include_router(profile_router)
     app.include_router(invoices_router)
     app.include_router(pomodoro_router)
+    app.include_router(pairing_router)
+    app.include_router(mobile_router)
     app.include_router(ws_router)
 
     @app.get("/api/status", tags=["meta"])
@@ -93,6 +99,7 @@ def create_app() -> FastAPI:
         }
 
     _mount_static_dashboard(app)
+    _mount_pwa(app)
     return app
 
 
@@ -134,6 +141,19 @@ def _mount_static_dashboard(app: FastAPI) -> None:
                 ),
                 "api_docs": "/api/docs",
             }
+
+
+def _mount_pwa(app: FastAPI) -> None:
+    """Mount the mobile PWA at /m/ if its assets are available.
+
+    Tries the packaged location (`chronolens/static_mobile/`) first, then
+    falls back to the source folder (`mobile/`) so `python -m chronolens`
+    works straight from a clean checkout.
+    """
+    target = _PWA_BUNDLED_DIR if (_PWA_BUNDLED_DIR / "index.html").is_file() else _PWA_SOURCE_DIR
+    if not (target / "index.html").is_file():
+        return
+    app.mount("/m", StaticFiles(directory=target, html=True), name="mobile-pwa")
 
 
 # Module-level app instance used by uvicorn.
