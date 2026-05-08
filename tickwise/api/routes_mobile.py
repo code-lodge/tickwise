@@ -33,6 +33,7 @@ def _timer() -> PomodoroTimer:
     timer = runtime.get_pomodoro_timer()
     if timer is None:
         timer = PomodoroTimer()
+        timer.start_thread()
         runtime.set_pomodoro_timer(timer)
     return timer
 

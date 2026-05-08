@@ -33,7 +33,9 @@ def _timer() -> PomodoroTimer:
     timer = runtime.get_pomodoro_timer()
     if timer is None:
         # Lazy-create when running without the full app boot (tests, dev).
+        # Started here too — under uvicorn-only boot nothing else would.
         timer = PomodoroTimer()
+        timer.start_thread()
         runtime.set_pomodoro_timer(timer)
     return timer
 

@@ -43,9 +43,18 @@ _start_time = time.time()
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application.
 
+    Initialises the database schema as a side effect so any embedding
+    (uvicorn, gunicorn, the test client) gets a working DB without
+    relying on `python -m tickwise` having run first. `init_db()` is
+    idempotent — re-running it is a no-op.
+
     Returns:
         Configured FastAPI instance with all routers mounted.
     """
+    from tickwise.db.schema import init_db
+
+    init_db()
+
     app = FastAPI(
         title="Tickwise",
         version=__version__,
