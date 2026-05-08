@@ -1,12 +1,35 @@
-import { Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, HostListener, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { ApiService } from './services/api.service';
+
+interface OnboardingState {
+  needs_llm_setup: boolean;
+  needs_profile: boolean;
+  needs_first_project: boolean;
+  needs_privacy_choice: boolean;
+  is_first_run: boolean;
+  complete: boolean;
+}
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   template: `
+    <div *ngIf="onboarding() && !onboarding()!.complete" class="first-run-banner">
+      <span>
+        <strong>Finish setting up Tickwise.</strong>
+        <span *ngIf="onboarding()!.needs_llm_setup"> Add an LLM key,</span>
+        <span *ngIf="onboarding()!.needs_profile"> fill in your business profile,</span>
+        <span *ngIf="onboarding()!.needs_first_project"> create a first project</span>
+        — pick up where you left off in
+        <a routerLink="/settings">Settings</a>.
+      </span>
+      <button class="ghost" (click)="dismissBanner()">Dismiss</button>
+    </div>
+
     <header class="topbar">
       <div class="brand">
         <span class="dot" [class.tracking]="status()?.tracking"></span>
@@ -26,6 +49,9 @@ import { ApiService } from './services/api.service';
         <a routerLink="/privacy" routerLinkActive="active">Privacy &amp; LLM</a>
         <a routerLink="/settings" routerLinkActive="active">Settings</a>
       </nav>
+      <button class="ghost" (click)="toggleTheme()" title="Toggle theme">
+        {{ theme() === 'dark' ? '☀' : '☾' }}
+      </button>
     </header>
 
     <main class="page">
@@ -45,20 +71,9 @@ import { ApiService } from './services/api.service';
         top: 0;
         z-index: 10;
       }
-      .brand {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-      }
-      .dot {
-        width: 0.6rem;
-        height: 0.6rem;
-        border-radius: 50%;
-        background: var(--color-muted);
-      }
-      .dot.tracking {
-        background: var(--color-success);
-      }
+      .brand { display: flex; gap: 0.5rem; align-items: center; }
+      .dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--color-muted); }
+      .dot.tracking { background: var(--color-success); }
       .nav a {
         margin: 0 0.5rem;
         padding: 0.4rem 0.6rem;
@@ -69,27 +84,70 @@ import { ApiService } from './services/api.service';
         color: var(--color-text);
         background: rgba(59, 130, 246, 0.08);
       }
-      .page {
-        max-width: 1200px;
-        margin: 1.5rem auto;
-        padding: 0 1.25rem;
-      }
+      .page { max-width: 1200px; margin: 1.5rem auto; padding: 0 1.25rem; }
     `,
   ],
 })
 export class AppComponent {
   private api = inject(ApiService);
+  private http = inject(HttpClient);
+  private router = inject(Router);
+
   status = signal<{ tracking: boolean; version: string } | null>(null);
+  onboarding = signal<OnboardingState | null>(null);
+  theme = signal<'light' | 'dark' | null>(localStorage.getItem('tickwise.theme') as 'light' | 'dark' | null);
 
   constructor() {
+    this.applyTheme();
+    this.refreshStatus();
+    this.refreshOnboarding();
+    setInterval(() => this.refreshStatus(), 5000);
+  }
+
+  private refreshStatus(): void {
     this.api.status().subscribe({
       next: (s) => this.status.set({ tracking: s.tracking, version: s.version }),
       error: () => this.status.set(null),
     });
-    setInterval(() => {
-      this.api.status().subscribe((s) =>
-        this.status.set({ tracking: s.tracking, version: s.version })
-      );
-    }, 5000);
+  }
+
+  private refreshOnboarding(): void {
+    if (sessionStorage.getItem('tickwise.banner.dismissed') === '1') return;
+    this.http.get<OnboardingState>('/api/onboarding/state').subscribe({
+      next: (o) => this.onboarding.set(o),
+      error: () => this.onboarding.set(null),
+    });
+  }
+
+  dismissBanner(): void {
+    sessionStorage.setItem('tickwise.banner.dismissed', '1');
+    this.onboarding.set(null);
+  }
+
+  toggleTheme(): void {
+    const next = this.theme() === 'dark' ? 'light' : 'dark';
+    this.theme.set(next);
+    localStorage.setItem('tickwise.theme', next);
+    this.applyTheme();
+  }
+
+  private applyTheme(): void {
+    const t = this.theme();
+    if (t) document.body.dataset['theme'] = t;
+    else delete document.body.dataset['theme'];
+  }
+
+  // Keyboard shortcuts: Ctrl/Cmd+P → pomodoro, Ctrl/Cmd+, → settings.
+  @HostListener('window:keydown', ['$event'])
+  onKey(event: KeyboardEvent): void {
+    if (!(event.ctrlKey || event.metaKey)) return;
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    if (event.key.toLowerCase() === 'p') {
+      event.preventDefault();
+      this.router.navigateByUrl('/pomodoro');
+    } else if (event.key === ',') {
+      event.preventDefault();
+      this.router.navigateByUrl('/settings');
+    }
   }
 }

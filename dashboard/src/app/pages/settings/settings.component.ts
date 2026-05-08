@@ -51,6 +51,22 @@ interface MonitorEntry {
       <p *ngIf="saved()" class="muted">Saved.</p>
     </div>
 
+    <h2 style="margin-top: 2rem">Backup</h2>
+    <p class="muted">Download every project, client, invoice, and configuration row as JSON.
+      Activities, classifications, and mobile tokens are excluded — they regenerate from
+      future captures.</p>
+    <div class="card">
+      <button (click)="downloadBackup()">Download backup JSON</button>
+    </div>
+
+    <h2 style="margin-top: 2rem">Keyboard shortcuts</h2>
+    <div class="card">
+      <table>
+        <tr><th>Ctrl / ⌘ + P</th><td>Open Pomodoro</td></tr>
+        <tr><th>Ctrl / ⌘ + ,</th><td>Open Settings</td></tr>
+      </table>
+    </div>
+
     <h2 style="margin-top: 2rem">Monitors</h2>
     <p class="muted">Detected displays. Disable a monitor to skip capturing it; the primary
       preference influences fallback when the focused-window position can't be determined.</p>
@@ -116,6 +132,19 @@ export class SettingsPageComponent implements OnInit {
     this.monitors.update((rows) => rows.map((r) => ({ ...r, is_primary: r.index === m.index })));
     const target = this.monitors().find((r) => r.index === m.index);
     if (target) this.saveMonitor(target);
+  }
+
+  downloadBackup(): void {
+    fetch('/api/backup/export')
+      .then((r) => r.blob())
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tickwise-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
   }
 
   private populate(map: SettingsMap): void {

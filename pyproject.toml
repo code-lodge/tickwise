@@ -4,7 +4,7 @@ build-backend = "setuptools.backends.legacy:build"
 
 [project]
 name = "tickwise"
-version = "0.1.0"
+version = "1.0.0"
 description = "Privacy-conscious automatic time tracking for freelancers"
 requires-python = ">=3.12"
 readme = "README.md"
