@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.calendar.ics_feed."""
+"""Unit tests for tickwise.calendar.ics_feed."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from chronolens.calendar.ics_feed import (
+from tickwise.calendar.ics_feed import (
     FeedFilter,
     build_calendar,
     fetch_sessions_for_feed,
@@ -20,7 +20,7 @@ SAMPLE_SESSIONS = [
         "ended_at": "2026-05-08T10:00:00",
         "duration_secs": 3600,
         "description": "Refactor capture loop",
-        "project_name": "ChronoLens",
+        "project_name": "Tickwise",
         "project_color": "#3B82F6",
     },
     {
@@ -53,7 +53,7 @@ class TestBuildCalendar:
         assert "BEGIN:VCALENDAR" in out
         assert "END:VCALENDAR" in out
         assert "BEGIN:VEVENT" in out
-        assert "chronolens-session-1@chronolens" in out
+        assert "tickwise-session-1@tickwise" in out
 
     def test_excludes_descriptions_by_default(self) -> None:
         out = build_calendar(SAMPLE_SESSIONS, include_descriptions=False)
@@ -93,7 +93,7 @@ class TestBuildCalendar:
 @pytest.mark.unit
 class TestFetchSessionsForFeed:
     def test_filters_by_min_duration(self, tmp_db) -> None:
-        from chronolens.db.connection import transaction
+        from tickwise.db.connection import transaction
 
         with transaction() as conn:
             conn.execute(
@@ -112,7 +112,7 @@ class TestFetchSessionsForFeed:
         assert long_only[0]["duration_secs"] == 3600
 
     def test_billable_only(self, tmp_db) -> None:
-        from chronolens.db.connection import transaction
+        from tickwise.db.connection import transaction
 
         with transaction() as conn:
             conn.execute(

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from chronolens.api import auth
-from chronolens.db.connection import transaction
+from tickwise.api import auth
+from tickwise.db.connection import transaction
 
 
 @pytest.mark.unit

@@ -5,14 +5,14 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from chronolens.classification.claude_client import ClaudeClient
-from chronolens.classification.llm_client import (
+from tickwise.classification.claude_client import ClaudeClient
+from tickwise.classification.llm_client import (
     LLMError,
     build_result,
     parse_classification_json,
 )
-from chronolens.classification.openai_client import OpenAIClient
-from chronolens.classification.prompts import (
+from tickwise.classification.openai_client import OpenAIClient
+from tickwise.classification.prompts import (
     SYSTEM_PROMPT,
     ClassificationContext,
     ProjectChoice,
@@ -108,7 +108,7 @@ class TestClaudeClient:
         assert result.confidence == 0.0
 
     def test_classify_uses_default_client(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        from chronolens.classification import claude_client as mod
+        from tickwise.classification import claude_client as mod
 
         # Real httpx.Client backed by MockTransport, but no client was injected
         # — the production code path constructs `httpx.Client(timeout=…)` itself,

@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.capture.window_info_macos.
+"""Unit tests for tickwise.capture.window_info_macos.
 
 These tests don't import AppKit — they exercise the module's logic by
 patching the lazy importers, so they pass on any host OS.
@@ -10,8 +10,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from chronolens.capture import window_info_macos as mod
-from chronolens.capture.window_info import WindowInfo
+from tickwise.capture import window_info_macos as mod
+from tickwise.capture.window_info import WindowInfo
 
 
 @pytest.mark.unit

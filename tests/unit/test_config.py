@@ -1,10 +1,10 @@
-"""Unit tests for chronolens.config."""
+"""Unit tests for tickwise.config."""
 
 from __future__ import annotations
 
 import pytest
 
-from chronolens import config
+from tickwise import config
 
 
 @pytest.mark.unit

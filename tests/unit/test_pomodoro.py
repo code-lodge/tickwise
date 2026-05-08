@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from chronolens.db.connection import get_connection
-from chronolens.pomodoro.timer import (
+from tickwise.db.connection import get_connection
+from tickwise.pomodoro.timer import (
     PomodoroSettings,
     PomodoroState,
     PomodoroTimer,

@@ -1,6 +1,6 @@
-# ChronoLens — Engineering Workflow
+# Tickwise — Engineering Workflow
 
-You are an AI coding agent building ChronoLens. This document defines **how** you work — your development practices, quality standards, and workflow discipline. Read this before touching any code. It applies to every phase, every file, every commit.
+You are an AI coding agent building Tickwise. This document defines **how** you work — your development practices, quality standards, and workflow discipline. Read this before touching any code. It applies to every phase, every file, every commit.
 
 ---
 
@@ -20,26 +20,26 @@ This is one of four documents that together form the complete project handoff:
 ```
 engineering-ontology.md                    ← The authority. Defines WHICH standards apply.
         │
-        ├── Referenced by §16 of this doc  ← Maps ontology standards to ChronoLens code.
+        ├── Referenced by §16 of this doc  ← Maps ontology standards to Tickwise code.
         │
         └── Informs the build spec         ← Spec decisions trace to ontology standards.
 
-chronolens-build-spec-v3.md                ← The spec. Defines WHAT to build.
+tickwise-build-spec-v3.md                ← The spec. Defines WHAT to build.
         │
         ├── Referenced by §2 of this doc   ← "Read the spec before coding."
         │
         └── Consumed by phases doc         ← Phases break the spec into ordered work.
 
-chronolens-implementation-phases.md        ← The plan. Defines WHEN to build it.
+tickwise-implementation-phases.md        ← The plan. Defines WHEN to build it.
         │
         └── Referenced by §2 of this doc   ← "Read the phase before starting it."
 
-chronolens-engineering-workflow.md          ← This doc. Defines HOW to work.
+tickwise-engineering-workflow.md          ← This doc. Defines HOW to work.
         │
         └── Applied during every phase     ← Testing, commits, quality, standards.
 ```
 
-**Rule: when the ontology and this document conflict, the ontology wins.** The ontology is the upstream authority for which standards apply. This document maps those standards to ChronoLens-specific implementation.
+**Rule: when the ontology and this document conflict, the ontology wins.** The ontology is the upstream authority for which standards apply. This document maps those standards to Tickwise-specific implementation.
 
 ---
 
@@ -78,9 +78,9 @@ These are non-negotiable. If you're ever uncertain about a decision, fall back t
 
 **5. Fail loudly, recover gracefully.** Log errors clearly. Never silently swallow exceptions. But also never crash the whole app because of a non-critical failure. The capture loop crashing is critical. A single LLM API call timing out is not.
 
-**6. Read the spec.** Before implementing any feature, re-read the relevant section of `chronolens-build-spec-v3.md`. The spec contains deliberate decisions. If you deviate from the spec, document why in the commit message and in a code comment.
+**6. Read the spec.** Before implementing any feature, re-read the relevant section of `tickwise-build-spec-v3.md`. The spec contains deliberate decisions. If you deviate from the spec, document why in the commit message and in a code comment.
 
-**7. Read the phase.** Before starting a phase, re-read its entry in `chronolens-implementation-phases.md`. Check which spec sections it references, which files it expects, and verify all acceptance criteria are understood before writing code.
+**7. Read the phase.** Before starting a phase, re-read its entry in `tickwise-implementation-phases.md`. Check which spec sections it references, which files it expects, and verify all acceptance criteria are understood before writing code.
 
 **8. One thing at a time.** Don't jump ahead. Don't partially implement three features. Finish one, test it, commit it, then start the next.
 
@@ -93,7 +93,7 @@ These are non-negotiable. If you're ever uncertain about a decision, fall back t
 For every discrete feature or component, follow this cycle:
 
 ```
-1. READ    — Re-read the relevant spec section(s) in chronolens-build-spec-v3.md
+1. READ    — Re-read the relevant spec section(s) in tickwise-build-spec-v3.md
 2. PLAN    — Identify files to create/modify, interfaces, dependencies
 3. STUB    — Write function signatures, type hints, docstrings (no implementation)
 4. TEST    — Write unit tests for the stubs (they will fail — that's correct)
@@ -110,8 +110,8 @@ For every discrete feature or component, follow this cycle:
 At the start of each phase:
 
 ```
-1. Read the phase description in chronolens-implementation-phases.md
-2. Read ALL referenced spec sections in chronolens-build-spec-v3.md
+1. Read the phase description in tickwise-implementation-phases.md
+2. Read ALL referenced spec sections in tickwise-build-spec-v3.md
 3. Check the ontology (engineering-ontology.md) for relevant standards in the phase's domain
 4. List all files to be created or modified
 5. Identify the implementation order (dependencies within the phase)
@@ -166,7 +166,7 @@ Thumbs.db
 *.db
 *.db-wal
 *.db-shm
-chronolens/static/
+tickwise/static/
 node_modules/
 
 # Secrets (NEVER commit)
@@ -187,7 +187,7 @@ main                    ← always stable, always passes tests
 └── phase/11-packaging
 ```
 
-Each phase gets a branch. Merge into `main` only when all phase acceptance criteria from `chronolens-implementation-phases.md` pass. If working solo, commit directly to the phase branch and merge when done.
+Each phase gets a branch. Merge into `main` only when all phase acceptance criteria from `tickwise-implementation-phases.md` pass. If working solo, commit directly to the phase branch and merge when done.
 
 ### 3.3 Commit Message Format
 
@@ -264,7 +264,7 @@ feat(capture): wip capture loop (tests broken)
 
 ### 3.5 Tagging
 
-Tag at the end of each phase (versions from `chronolens-implementation-phases.md` §Versioning Strategy):
+Tag at the end of each phase (versions from `tickwise-implementation-phases.md` §Versioning Strategy):
 
 ```bash
 git tag -a v0.1.0 -m "Phase 0: Foundation scaffolding complete"
@@ -348,14 +348,14 @@ tests/
 import pytest
 import tempfile
 import os
-from chronolens.db.connection import get_db, init_db
-from chronolens.db.schema import create_tables
+from tickwise.db.connection import get_db, init_db
+from tickwise.db.schema import create_tables
 
 @pytest.fixture
 def temp_db(tmp_path):
     """Fresh SQLite database for each test."""
     db_path = tmp_path / "test.db"
-    os.environ["CHRONOLENS_DB_PATH"] = str(db_path)
+    os.environ["TICKWISE_DB_PATH"] = str(db_path)
     conn = get_db(str(db_path))
     create_tables(conn)
     yield conn
@@ -375,7 +375,7 @@ def sample_projects(temp_db):
 @pytest.fixture
 def redaction_engine():
     """RedactionEngine at default Level 2 with no custom rules."""
-    from chronolens.redaction.engine import RedactionEngine
+    from tickwise.redaction.engine import RedactionEngine
     return RedactionEngine(privacy_level=2, custom_rules=[])
 
 @pytest.fixture
@@ -442,7 +442,7 @@ def test_invoice_total_with_21_percent_vat_calculates_correctly():
 pytest
 
 # Run with coverage
-pytest --cov=chronolens --cov-report=term-missing
+pytest --cov=tickwise --cov-report=term-missing
 
 # Run only unit tests
 pytest tests/unit/
@@ -497,7 +497,7 @@ Never call real external APIs in automated tests. Mock them:
 # Mock LLM API
 from unittest.mock import AsyncMock, patch
 
-@patch("chronolens.classification.claude_client.httpx.AsyncClient.post")
+@patch("tickwise.classification.claude_client.httpx.AsyncClient.post")
 async def test_classify_with_claude(mock_post, mock_llm_response):
     mock_post.return_value = MockResponse(json={
         "content": [{"type": "text", "text": json.dumps(mock_llm_response)}]
@@ -506,7 +506,7 @@ async def test_classify_with_claude(mock_post, mock_llm_response):
     assert result["project"] == "Project Alpha"
 
 # Mock Cloudflare API
-@patch("chronolens.cloudflare.api_client.httpx.AsyncClient")
+@patch("tickwise.cloudflare.api_client.httpx.AsyncClient")
 async def test_create_tunnel(mock_client):
     mock_client.return_value.post.return_value = MockResponse(json={
         "result": {"id": "tunnel-123", "token": "tok-abc"}
@@ -585,9 +585,9 @@ asyncio_mode = "auto"
 Before every commit, run:
 
 ```bash
-black chronolens/ tests/
-ruff check chronolens/ tests/ --fix
-mypy chronolens/
+black tickwise/ tests/
+ruff check tickwise/ tests/ --fix
+mypy tickwise/
 pytest
 ```
 
@@ -747,7 +747,7 @@ def redact(self, text: str, window_title: str | None = None) -> RedactionResult:
 Module-level docstrings explain the module's role in the system:
 
 ```python
-"""Text redaction engine for ChronoLens.
+"""Text redaction engine for Tickwise.
 
 This module implements a multi-level privacy redaction system that sanitizes
 OCR text, window titles, and browser content before they are sent to the
@@ -762,7 +762,7 @@ Architecture:
     4. Collapse whitespace and trim to max length
 
 See Also:
-    chronolens-build-spec-v3.md §4 for full pattern tables.
+    tickwise-build-spec-v3.md §4 for full pattern tables.
     engineering-ontology.md §19 (Security) for the standards behind redaction.
 """
 ```
@@ -775,7 +775,7 @@ Use inline comments for **why**, not **what**:
 # GOOD — explains a non-obvious decision:
 # Skip OCR for monitors that aren't focused — we only hash-track them
 # for instant classification when the user switches focus
-# (see chronolens-build-spec-v3.md §3.1 Multi-Monitor Capture)
+# (see tickwise-build-spec-v3.md §3.1 Multi-Monitor Capture)
 if monitor_index != focused_monitor:
     continue
 
@@ -819,7 +819,7 @@ What are the trade-offs?
 
 ## References
 
-- chronolens-build-spec-v3.md §N
+- tickwise-build-spec-v3.md §N
 - engineering-ontology.md §N
 ```
 
@@ -905,7 +905,7 @@ def setup_logging(log_level: str = "INFO") -> None:
     Logs go to both console (stderr) and a rotating log file.
     """
     log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-    log_file = get_data_dir() / "chronolens.log"
+    log_file = get_data_dir() / "tickwise.log"
 
     logging.basicConfig(
         level=getattr(logging, log_level.upper()),
@@ -1175,11 +1175,11 @@ if platform.system() == "Windows":
 ```python
 # CORRECT:
 from pathlib import Path
-db_path = Path(get_data_dir()) / "chronolens.db"
+db_path = Path(get_data_dir()) / "tickwise.db"
 
 # WRONG:
-db_path = get_data_dir() + "/chronolens.db"       # fails on Windows
-db_path = get_data_dir() + "\\chronolens.db"      # fails on Linux/macOS
+db_path = get_data_dir() + "/tickwise.db"       # fails on Windows
+db_path = get_data_dir() + "\\tickwise.db"      # fails on Linux/macOS
 ```
 
 ### 10.3 Testing Cross-Platform Code
@@ -1463,7 +1463,7 @@ Add a `--debug` CLI flag that:
     "hostname": "time.example.com"
   },
   "db": {
-    "path": "/home/user/.local/share/chronolens/chronolens.db",
+    "path": "/home/user/.local/share/tickwise/tickwise.db",
     "size_bytes": 4521984,
     "sessions_count": 1247
   }
@@ -1474,11 +1474,11 @@ Add a `--debug` CLI flag that:
 
 When something breaks, check in this order:
 
-1. **Logs** — `chronolens.log` in the data directory
-2. **Database** — `sqlite3 chronolens.db ".tables"` / `"SELECT COUNT(*) FROM activities"`
+1. **Logs** — `tickwise.log` in the data directory
+2. **Database** — `sqlite3 tickwise.db ".tables"` / `"SELECT COUNT(*) FROM activities"`
 3. **API** — `curl http://localhost:19532/api/status`
 4. **Tray** — is the icon present? What color? (see `build-spec` §12 Tray Icon States)
-5. **Processes** — is `chronolens` running? Multiple instances?
+5. **Processes** — is `tickwise` running? Multiple instances?
 6. **Ports** — is 19532 already in use? `netstat -tlnp | grep 19532`
 
 ---
@@ -1487,7 +1487,7 @@ When something breaks, check in this order:
 
 This project adheres to the **Global Software Engineering Standards Ontology v3.0** (`engineering-ontology.md`). The ontology loading strategy (§1.1) requires loading relevant domains plus always-loaded domains (`security`, `internet_protocols`, `software_quality`).
 
-### 16.1 Ontology Loading — Domains Active for ChronoLens
+### 16.1 Ontology Loading — Domains Active for Tickwise
 
 Per `engineering-ontology.md` §1.1, load based on language, runtime, and deployment model:
 
@@ -1660,7 +1660,7 @@ WHEN IN DOUBT:          Check engineering-ontology.md for the authoritative stan
 
 | Document              | Location                                             |
 | --------------------- | ---------------------------------------------------- |
-| Build Specification   | `chronolens-build-spec-v3.md`                        |
-| Implementation Phases | `chronolens-implementation-phases.md`                |
-| Engineering Workflow  | `chronolens-engineering-workflow.md` (this document) |
+| Build Specification   | `tickwise-build-spec-v3.md`                        |
+| Implementation Phases | `tickwise-implementation-phases.md`                |
+| Engineering Workflow  | `tickwise-engineering-workflow.md` (this document) |
 | Engineering Ontology  | `engineering-ontology.md`                            |

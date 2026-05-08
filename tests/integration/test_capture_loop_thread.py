@@ -8,11 +8,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from chronolens.capture.loop import CaptureLoop
-from chronolens.capture.screenshot import Screenshot
-from chronolens.capture.window_info import WindowInfo
-from chronolens.classification import queue as cq
-from chronolens.db.connection import get_connection
+from tickwise.capture.loop import CaptureLoop
+from tickwise.capture.screenshot import Screenshot
+from tickwise.capture.window_info import WindowInfo
+from tickwise.classification import queue as cq
+from tickwise.db.connection import get_connection
 
 
 def _solid_screenshot() -> Screenshot:
@@ -58,9 +58,9 @@ class TestCaptureLoopThread:
             return windows[min(call_count["n"], len(windows) - 1)]
 
         with (
-            patch("chronolens.capture.loop.ScreenCapturer", return_value=fake_capturer),
-            patch("chronolens.capture.loop.get_idle_seconds", return_value=0.0),
-            patch("chronolens.capture.loop.get_active_window", side_effect=next_window),
+            patch("tickwise.capture.loop.ScreenCapturer", return_value=fake_capturer),
+            patch("tickwise.capture.loop.get_idle_seconds", return_value=0.0),
+            patch("tickwise.capture.loop.get_active_window", side_effect=next_window),
             patch.object(CaptureLoop, "tick_once", counting_tick),
         ):
             loop.start()
@@ -91,10 +91,10 @@ class TestCaptureLoopThread:
         fake_capturer.capture_all.return_value = {1: _solid_screenshot()}
 
         with (
-            patch("chronolens.capture.loop.ScreenCapturer", return_value=fake_capturer),
-            patch("chronolens.capture.loop.get_idle_seconds", return_value=0.0),
+            patch("tickwise.capture.loop.ScreenCapturer", return_value=fake_capturer),
+            patch("tickwise.capture.loop.get_idle_seconds", return_value=0.0),
             patch(
-                "chronolens.capture.loop.get_active_window",
+                "tickwise.capture.loop.get_active_window",
                 return_value=WindowInfo(title="A", process_name="p", pid=1),
             ),
             patch.object(CaptureLoop, "tick_once", counting),
@@ -110,7 +110,7 @@ class TestCaptureLoopThread:
 
     def test_stop_is_idempotent(self, tmp_db: Path) -> None:
         loop = CaptureLoop(tick_seconds=0.05)
-        with patch("chronolens.capture.loop.ScreenCapturer", side_effect=RuntimeError("no mss")):
+        with patch("tickwise.capture.loop.ScreenCapturer", side_effect=RuntimeError("no mss")):
             loop.start()
             loop.stop(join_timeout=1.0)
             loop.stop(join_timeout=1.0)  # second stop should be a no-op

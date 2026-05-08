@@ -1,8 +1,8 @@
-# ChronoLens browser bridge
+# Tickwise browser bridge
 
 The browser extension forwards the active tab's URL and title (and an
-optional 1.5 KB plain-text snippet) to the local ChronoLens app over
-WebSocket. ChronoLens uses that context to classify activity into
+optional 1.5 KB plain-text snippet) to the local Tickwise app over
+WebSocket. Tickwise uses that context to classify activity into
 projects more accurately than window-title alone allows.
 
 ## Install (development)
@@ -36,6 +36,6 @@ Both controls live in the extension's options page:
   visible text is included to help the LLM disambiguate. When
   disabled, only URL + title are sent.
 
-The snippet is redacted by ChronoLens before reaching the LLM, but
+The snippet is redacted by Tickwise before reaching the LLM, but
 disabling it removes the data at the source so it never leaves the
 browser.

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from chronolens.db.connection import transaction
+from tickwise.db.connection import transaction
 
 
 def _seed_session(started: str = "2026-05-08T09:00:00", duration: int = 600) -> int:

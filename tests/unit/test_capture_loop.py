@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.capture.loop."""
+"""Unit tests for tickwise.capture.loop."""
 
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ from unittest.mock import patch
 
 import pytest
 
-from chronolens.capture.loop import CaptureLoop
-from chronolens.capture.screenshot import Screenshot
-from chronolens.capture.window_info import WindowInfo
-from chronolens.classification import queue as cq
-from chronolens.db.connection import get_connection
+from tickwise.capture.loop import CaptureLoop
+from tickwise.capture.screenshot import Screenshot
+from tickwise.capture.window_info import WindowInfo
+from tickwise.classification import queue as cq
+from tickwise.db.connection import get_connection
 
 
 def _solid_screenshot() -> Screenshot:
@@ -44,9 +44,9 @@ class TestCaptureLoopTick:
         )
 
         with (
-            patch("chronolens.capture.loop.get_idle_seconds", return_value=0.0),
+            patch("tickwise.capture.loop.get_idle_seconds", return_value=0.0),
             patch(
-                "chronolens.capture.loop.get_active_window",
+                "tickwise.capture.loop.get_active_window",
                 return_value=WindowInfo(title="VS Code", process_name="code.exe", pid=1),
             ),
             patch.object(loop, "_safe_capture", return_value=_solid_screenshot()),
@@ -79,8 +79,8 @@ class TestCaptureLoopTick:
 
         win = WindowInfo(title="A", process_name="p", pid=1)
         with (
-            patch("chronolens.capture.loop.get_idle_seconds", return_value=0.0),
-            patch("chronolens.capture.loop.get_active_window", return_value=win),
+            patch("tickwise.capture.loop.get_idle_seconds", return_value=0.0),
+            patch("tickwise.capture.loop.get_active_window", return_value=win),
             patch.object(loop, "_safe_capture", return_value=_solid_screenshot()),
             patch.object(loop, "_safe_capture_all", return_value={1: _solid_screenshot()}),
         ):
@@ -93,7 +93,7 @@ class TestCaptureLoopTick:
 
     def test_idle_above_threshold_skips(self, tmp_db: Path) -> None:
         loop = CaptureLoop(idle_split_threshold=10, ocr_runner=lambda _s, _w: "")
-        with patch("chronolens.capture.loop.get_idle_seconds", return_value=999.0):
+        with patch("tickwise.capture.loop.get_idle_seconds", return_value=999.0):
             assert loop.tick_once() is False
         assert loop.last_idle_seconds == 999.0
         assert get_connection().execute("SELECT COUNT(*) FROM activities").fetchone()[0] == 0
@@ -109,9 +109,9 @@ class TestCaptureLoopTick:
     def test_screenshot_failure_falls_through(self, tmp_db: Path) -> None:
         loop = CaptureLoop(ocr_runner=lambda _s, _w: "")
         with (
-            patch("chronolens.capture.loop.get_idle_seconds", return_value=0.0),
+            patch("tickwise.capture.loop.get_idle_seconds", return_value=0.0),
             patch(
-                "chronolens.capture.loop.get_active_window",
+                "tickwise.capture.loop.get_active_window",
                 return_value=WindowInfo(title="X", process_name="x", pid=1),
             ),
             patch.object(loop, "_safe_capture", return_value=None),
@@ -123,17 +123,17 @@ class TestCaptureLoopTick:
     def test_change_after_window_switch(self, tmp_db: Path) -> None:
         loop = CaptureLoop(ocr_runner=lambda _s, _w: "")
         with (
-            patch("chronolens.capture.loop.get_idle_seconds", return_value=0.0),
+            patch("tickwise.capture.loop.get_idle_seconds", return_value=0.0),
             patch.object(loop, "_safe_capture", return_value=_solid_screenshot()),
             patch.object(loop, "_safe_capture_all", return_value={1: _solid_screenshot()}),
         ):
             with patch(
-                "chronolens.capture.loop.get_active_window",
+                "tickwise.capture.loop.get_active_window",
                 return_value=WindowInfo(title="A", process_name="p", pid=1),
             ):
                 loop.tick_once()
             with patch(
-                "chronolens.capture.loop.get_active_window",
+                "tickwise.capture.loop.get_active_window",
                 return_value=WindowInfo(title="B", process_name="p", pid=1),
             ):
                 changed = loop.tick_once()
@@ -148,7 +148,7 @@ class TestCaptureLoopThreadLifecycle:
         loop = CaptureLoop(tick_seconds=0.05)
         # Force the thread to bail immediately by having ScreenCapturer raise.
         with patch(
-            "chronolens.capture.loop.ScreenCapturer",
+            "tickwise.capture.loop.ScreenCapturer",
             side_effect=RuntimeError("mss missing"),
         ):
             loop.start()

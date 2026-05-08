@@ -1,6 +1,6 @@
-# ChronoLens — Complete Build Specification v3
+# Tickwise — Complete Build Specification v3
 
-You are building **ChronoLens**, a cross-platform, privacy-conscious, automatic time tracking application for freelancers and consultants. It passively monitors computer usage across all monitors, uses a cloud LLM (Claude or OpenAI) to intelligently classify activities into projects and task categories, and produces billing reports, invoices, and calendar entries. It runs as a system tray / menu bar application on Windows, macOS, and Linux.
+You are building **Tickwise**, a cross-platform, privacy-conscious, automatic time tracking application for freelancers and consultants. It passively monitors computer usage across all monitors, uses a cloud LLM (Claude or OpenAI) to intelligently classify activities into projects and task categories, and produces billing reports, invoices, and calendar entries. It runs as a system tray / menu bar application on Windows, macOS, and Linux.
 
 Read this entire specification before writing any code. Follow it precisely — every architectural decision documented here was made deliberately.
 
@@ -35,7 +35,7 @@ Read this entire specification before writing any code. Follow it precisely — 
 
 ## 1. PROJECT CONTEXT
 
-The user is a freelance software engineer starting a consultancy. They need to know exactly how long projects take so they can set accurate hourly rates and produce billing evidence — including professional invoices — for clients. Existing tools like Toggl require manual time entry. ChronoLens tracks automatically by observing what's on screen, using a cloud LLM to intelligently classify what the user is working on, and generating reports and invoices.
+The user is a freelance software engineer starting a consultancy. They need to know exactly how long projects take so they can set accurate hourly rates and produce billing evidence — including professional invoices — for clients. Existing tools like Toggl require manual time entry. Tickwise tracks automatically by observing what's on screen, using a cloud LLM to intelligently classify what the user is working on, and generating reports and invoices.
 
 ### Key Requirements
 
@@ -129,7 +129,7 @@ The user is a freelance software engineer starting a consultancy. They need to k
 ### Process Architecture
 
 ```
-chronolens (single main process)
+tickwise (single main process)
 ├── Thread: System tray / menu bar icon
 ├── Thread: Capture loop (1s tick, multi-monitor, change detection, OCR)
 ├── Thread: LLM classification queue consumer
@@ -642,9 +642,9 @@ When the LLM encounters context that doesn't match any existing project, it retu
 
 SQLite with WAL mode. Database file at platform-appropriate location:
 
-- **Windows**: `%APPDATA%/ChronoLens/chronolens.db`
-- **macOS**: `~/Library/Application Support/ChronoLens/chronolens.db`
-- **Linux**: `~/.local/share/chronolens/chronolens.db`
+- **Windows**: `%APPDATA%/Tickwise/tickwise.db`
+- **macOS**: `~/Library/Application Support/Tickwise/tickwise.db`
+- **Linux**: `~/.local/share/tickwise/tickwise.db`
 
 ```sql
 -- ============================================================
@@ -1199,7 +1199,7 @@ Feed filtering via `ics_feed_config`: project filter, billable-only toggle, mini
 
 **Tuta setup flow:**
 
-1. Enable ICS Feed in ChronoLens dashboard
+1. Enable ICS Feed in Tickwise dashboard
 2. Enable Cloudflare Tunnel with a stable domain
 3. Public URL becomes: `https://time.example.com/api/calendar/feed/{token}.ics`
 4. In Tuta Calendar → click "+" → "from URL" → paste URL
@@ -1444,15 +1444,15 @@ When a timer period ends:
 │ 🔄 Sync Calendar Now                     │
 │ ⚙ Settings                               │
 │ ──────────────────────────────────────── │
-│ ✕ Quit ChronoLens                        │
+│ ✕ Quit Tickwise                        │
 └──────────────────────────────────────────┘
 ```
 
 ### Autostart
 
 **Windows**: `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` registry key
-**macOS**: `~/Library/LaunchAgents/com.chronolens.plist` launch agent
-**Linux**: `~/.config/autostart/chronolens.desktop` XDG autostart entry
+**macOS**: `~/Library/LaunchAgents/com.tickwise.plist` launch agent
+**Linux**: `~/.config/autostart/tickwise.desktop` XDG autostart entry
 
 ### Startup Sequence
 
@@ -1603,7 +1603,7 @@ Angular 19+ with standalone components and signals. Served as static files by Fa
 
 ### Purpose
 
-The browser extension provides richer context than window titles alone. It captures the exact URL, page title, and a snippet of page content, then sends this to ChronoLens via a local WebSocket or HTTP connection.
+The browser extension provides richer context than window titles alone. It captures the exact URL, page title, and a snippet of page content, then sends this to Tickwise via a local WebSocket or HTTP connection.
 
 ### Supported Browsers
 
@@ -1618,7 +1618,7 @@ Browser Extension (content script + background worker)
     │ WebSocket or HTTP POST to localhost:19532
     │
     ▼
-ChronoLens API Server
+Tickwise API Server
     │
     │ merges browser context into capture loop
     │
@@ -1637,7 +1637,7 @@ Classification Pipeline
 
 ### Communication Protocol
 
-The extension connects to ChronoLens via WebSocket at `ws://localhost:19532/ws/browser-extension`:
+The extension connects to Tickwise via WebSocket at `ws://localhost:19532/ws/browser-extension`:
 
 ```typescript
 // Extension background worker
@@ -1674,7 +1674,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 A small popup when clicking the extension icon:
 
-- Connection status (connected / disconnected to ChronoLens)
+- Connection status (connected / disconnected to Tickwise)
 - Current classification: "Project: Scenery en Zo — coding"
 - Pomodoro timer display + start/stop button
 - Quick project switch (override current classification)
@@ -1691,7 +1691,7 @@ A small popup when clicking the extension icon:
 
 - **Excluded domains**: list of domains where the extension won't capture content (e.g. `bank.example.com`, `mail.google.com`)
 - **Content capture toggle**: disable content snippet capture entirely (only send URL + title)
-- **Auto-connect**: automatically connect to ChronoLens on browser start
+- **Auto-connect**: automatically connect to Tickwise on browser start
 
 ---
 
@@ -1705,21 +1705,21 @@ View time tracking data, control the Pomodoro timer, and review reports from a p
 
 Two approaches (implementer should choose based on team expertise):
 
-1. **Progressive Web App (PWA)**: Angular-based, served from ChronoLens. Works in mobile browser. No app store needed. Lower effort.
+1. **Progressive Web App (PWA)**: Angular-based, served from Tickwise. Works in mobile browser. No app store needed. Lower effort.
 2. **React Native**: Native app for iOS/Android. Better notifications, home screen widget. Higher effort.
 
 **Recommendation: Start with PWA for v1.** If native features are needed later, build React Native for v2.
 
 ### Connectivity
 
-The mobile app connects to ChronoLens via the Cloudflare Tunnel. All mobile endpoints are under `/api/mobile/*` and require bearer token authentication.
+The mobile app connects to Tickwise via the Cloudflare Tunnel. All mobile endpoints are under `/api/mobile/*` and require bearer token authentication.
 
 ### Pairing Flow
 
-1. In ChronoLens dashboard → Settings → Mobile → "Pair Device"
+1. In Tickwise dashboard → Settings → Mobile → "Pair Device"
 2. App generates a random auth token and displays it as a QR code
 3. User scans QR code with phone camera or enters the token manually
-4. QR code encodes: `chronolens://{hostname}/api/mobile?token={token}`
+4. QR code encodes: `tickwise://{hostname}/api/mobile?token={token}`
 5. Mobile app stores the hostname + token for future requests
 
 ### Mobile Screens
@@ -1762,8 +1762,8 @@ For PWA, use the Web Push API for Pomodoro timer notifications. Requires the Clo
 ## 16. DIRECTORY STRUCTURE
 
 ```
-chronolens/
-├── chronolens/                         # Python package (backend)
+tickwise/
+├── tickwise/                         # Python package (backend)
 │   ├── __init__.py
 │   ├── __main__.py                     # Entry point
 │   ├── app.py                          # FastAPI app + uvicorn
@@ -1990,11 +1990,11 @@ chronolens/
 ├── README.md
 └── installer/
     ├── windows/
-    │   └── chronolens.nsi             # NSIS installer
+    │   └── tickwise.nsi             # NSIS installer
     ├── macos/
     │   └── build_dmg.sh               # DMG builder script
     └── linux/
-        ├── chronolens.desktop         # XDG desktop entry
+        ├── tickwise.desktop         # XDG desktop entry
         └── build_appimage.sh          # AppImage builder
 ```
 
@@ -2122,9 +2122,9 @@ Use the `keyring` Python library for a unified API. Fall back to encrypted file 
 
 | Platform    | Data                                        | Config                  |
 | ----------- | ------------------------------------------- | ----------------------- |
-| **Windows** | `%APPDATA%/ChronoLens/`                     | Same                    |
-| **macOS**   | `~/Library/Application Support/ChronoLens/` | Same                    |
-| **Linux**   | `~/.local/share/chronolens/`                | `~/.config/chronolens/` |
+| **Windows** | `%APPDATA%/Tickwise/`                     | Same                    |
+| **macOS**   | `~/Library/Application Support/Tickwise/` | Same                    |
+| **Linux**   | `~/.local/share/tickwise/`                | `~/.config/tickwise/` |
 
 ### Notifications
 
@@ -2192,11 +2192,11 @@ Use the `keyring` Python library for a unified API. Fall back to encrypted file 
 
 ```bash
 # Backend
-cd chronolens
+cd tickwise
 python -m venv .venv
 source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 pip install -r requirements.txt
-python -m chronolens
+python -m tickwise
 
 # Dashboard (separate terminal)
 cd dashboard
@@ -2217,16 +2217,16 @@ ng serve --port 4300
 
 ```bash
 # Dashboard
-cd dashboard && ng build --configuration=production --output-path=../chronolens/static
+cd dashboard && ng build --configuration=production --output-path=../tickwise/static
 
 # Mobile PWA
-cd mobile && ng build --configuration=production --output-path=../chronolens/static/mobile
+cd mobile && ng build --configuration=production --output-path=../tickwise/static/mobile
 
 # Package
-pyinstaller --onedir --noconsole --name ChronoLens \
-    --add-data "chronolens/static:static" \
-    --add-data "chronolens/invoices/templates:invoices/templates" \
-    chronolens/__main__.py
+pyinstaller --onedir --noconsole --name Tickwise \
+    --add-data "tickwise/static:static" \
+    --add-data "tickwise/invoices/templates:invoices/templates" \
+    tickwise/__main__.py
 ```
 
 ### Platform Packaging

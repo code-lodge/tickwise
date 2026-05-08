@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for ChronoLens test suite."""
+"""Shared pytest fixtures for Tickwise test suite."""
 
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from chronolens.db import connection as db_connection
-from chronolens.db.schema import init_db
+from tickwise.db import connection as db_connection
+from tickwise.db.schema import init_db
 
 
 @pytest.fixture()
@@ -22,7 +22,7 @@ def tmp_db(tmp_path: Path) -> Generator[Path, None, None]:
     Yields:
         Path to the temporary database file.
     """
-    db_file = tmp_path / "test_chronolens.db"
+    db_file = tmp_path / "test_tickwise.db"
     db_connection.set_db_path(db_file)
     init_db()
     yield db_file
@@ -35,9 +35,9 @@ def client(tmp_db: Path) -> Generator[TestClient, None, None]:
     """Provide a FastAPI TestClient backed by the temp DB.
 
     Yields:
-        httpx-compatible TestClient for the ChronoLens FastAPI app.
+        httpx-compatible TestClient for the Tickwise FastAPI app.
     """
-    from chronolens.app import create_app
+    from tickwise.app import create_app
 
     app = create_app()
     with TestClient(app) as tc:

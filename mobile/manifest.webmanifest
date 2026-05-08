@@ -1,7 +1,7 @@
 {
-  "name": "ChronoLens Mobile",
-  "short_name": "ChronoLens",
-  "description": "Companion app for the ChronoLens time tracker",
+  "name": "Tickwise Mobile",
+  "short_name": "Tickwise",
+  "description": "Companion app for the Tickwise time tracker",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

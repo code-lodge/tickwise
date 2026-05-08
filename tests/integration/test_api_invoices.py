@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from chronolens.db.connection import transaction
+from tickwise.db.connection import transaction
 
 
 def _seed_project_with_session(rate: float = 100.0, billed: int = 0) -> tuple[int, int]:
@@ -133,7 +133,7 @@ class TestInvoiceLifecycle:
                 ],
             },
         )
-        from chronolens.db.connection import get_connection
+        from tickwise.db.connection import get_connection
 
         row = (
             get_connection()

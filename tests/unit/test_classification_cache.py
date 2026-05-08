@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.classification.cache."""
+"""Unit tests for tickwise.classification.cache."""
 
 from __future__ import annotations
 
@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from chronolens.classification import cache as cache_mod
-from chronolens.classification.llm_client import ClassificationResult
-from chronolens.db.connection import get_connection, transaction
+from tickwise.classification import cache as cache_mod
+from tickwise.classification.llm_client import ClassificationResult
+from tickwise.db.connection import get_connection, transaction
 
 
 def _result(project: str = "Alpha") -> ClassificationResult:

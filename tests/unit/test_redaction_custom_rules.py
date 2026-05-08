@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from chronolens.db.connection import transaction
-from chronolens.redaction.custom_rules import CustomRule, apply_rules, load_active_rules
+from tickwise.db.connection import transaction
+from tickwise.redaction.custom_rules import CustomRule, apply_rules, load_active_rules
 
 
 def _insert_rule(pattern: str, mode: str = "contains", replacement: str = "[CLIENT]") -> None:

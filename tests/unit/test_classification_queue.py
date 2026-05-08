@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.classification.queue."""
+"""Unit tests for tickwise.classification.queue."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from chronolens.classification import queue as cq
+from tickwise.classification import queue as cq
 
 
 def _job(idx: int) -> cq.ClassificationJob:

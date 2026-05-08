@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.platform.notifications."""
+"""Unit tests for tickwise.platform.notifications."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from chronolens.platform import notifications as mod
+from tickwise.platform import notifications as mod
 
 
 @pytest.mark.unit

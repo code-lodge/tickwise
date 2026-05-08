@@ -1,4 +1,4 @@
-/* ChronoLens PWA service worker.
+/* Tickwise PWA service worker.
  *
  * Caches the app shell so the UI loads instantly and works offline.
  * API responses are network-first — the user wants live data when
@@ -6,7 +6,7 @@
  * they can see "no connection" instead of a browser error page.
  */
 
-const CACHE_VERSION = "chronolens-mobile-v1";
+const CACHE_VERSION = "tickwise-mobile-v1";
 const SHELL = [
   "./",
   "index.html",
@@ -57,5 +57,5 @@ self.addEventListener("push", (event) => {
       body = event.data.text();
     }
   }
-  event.waitUntil(self.registration.showNotification("ChronoLens", { body }));
+  event.waitUntil(self.registration.showNotification("Tickwise", { body }));
 });

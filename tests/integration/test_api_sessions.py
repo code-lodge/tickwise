@@ -7,7 +7,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from fastapi.testclient import TestClient
 
-from chronolens.db.connection import transaction
+from tickwise.db.connection import transaction
 
 
 def _insert_session(started_at: datetime, duration: int = 60, description: str = "test") -> int:

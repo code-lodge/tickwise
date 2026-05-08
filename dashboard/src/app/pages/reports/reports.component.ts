@@ -117,7 +117,7 @@ export class ReportsPageComponent implements OnInit {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `chronolens-${this.type}-${this.fromDate}-${this.toDate}.${format}`;
+        a.download = `tickwise-${this.type}-${this.fromDate}-${this.toDate}.${format}`;
         a.click();
         URL.revokeObjectURL(url);
       })

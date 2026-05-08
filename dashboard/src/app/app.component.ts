@@ -10,7 +10,7 @@ import { ApiService } from './services/api.service';
     <header class="topbar">
       <div class="brand">
         <span class="dot" [class.tracking]="status()?.tracking"></span>
-        <strong>ChronoLens</strong>
+        <strong>Tickwise</strong>
         <span class="muted">v{{ status()?.version || '–' }}</span>
       </div>
       <nav class="nav">

@@ -7,15 +7,15 @@ from pathlib import Path
 
 import pytest
 
-from chronolens.platform import autostart_linux, autostart_macos
-from chronolens.platform.autostart import default_launch_command
+from tickwise.platform import autostart_linux, autostart_macos
+from tickwise.platform.autostart import default_launch_command
 
 
 @pytest.mark.unit
 class TestDefaultLaunchCommand:
     def test_includes_python_and_module(self) -> None:
         cmd = default_launch_command()
-        assert "-m chronolens" in cmd
+        assert "-m tickwise" in cmd
         assert sys.executable in cmd or sys.executable.replace("\\", "/") in cmd
 
 
@@ -23,11 +23,11 @@ class TestDefaultLaunchCommand:
 class TestAutostartLinux:
     def test_enable_writes_desktop_file(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
-        autostart_linux.enable("/usr/bin/python -m chronolens")
-        target = tmp_path / "autostart" / "chronolens.desktop"
+        autostart_linux.enable("/usr/bin/python -m tickwise")
+        target = tmp_path / "autostart" / "tickwise.desktop"
         assert target.is_file()
         body = target.read_text("utf-8")
-        assert "Exec=/usr/bin/python -m chronolens" in body
+        assert "Exec=/usr/bin/python -m tickwise" in body
         assert "Type=Application" in body
 
     def test_is_enabled_reflects_file_presence(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -51,19 +51,19 @@ class TestAutostartLinux:
 class TestAutostartMacOS:
     def test_enable_writes_plist(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(Path, "home", classmethod(lambda _cls: tmp_path))  # type: ignore[arg-type]
-        autostart_macos.enable("/usr/bin/python -m chronolens")
-        plist = tmp_path / "Library" / "LaunchAgents" / "com.chronolens.plist"
+        autostart_macos.enable("/usr/bin/python -m tickwise")
+        plist = tmp_path / "Library" / "LaunchAgents" / "com.tickwise.plist"
         assert plist.is_file()
         body = plist.read_bytes()
-        assert b"com.chronolens" in body
+        assert b"com.tickwise" in body
         assert b"-m" in body
-        assert b"chronolens" in body
+        assert b"tickwise" in body
         assert b"RunAtLoad" in body
 
     def test_is_enabled_and_disable(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(Path, "home", classmethod(lambda _cls: tmp_path))  # type: ignore[arg-type]
         assert autostart_macos.is_enabled() is False
-        autostart_macos.enable("python -m chronolens")
+        autostart_macos.enable("python -m tickwise")
         assert autostart_macos.is_enabled() is True
         autostart_macos.disable()
         assert autostart_macos.is_enabled() is False
@@ -74,12 +74,12 @@ class TestAutostartMacOS:
 @pytest.mark.skipif(sys.platform != "win32", reason="Windows-only registry path")
 class TestAutostartWindows:
     def test_enable_disable_round_trip(self) -> None:
-        from chronolens.platform import autostart_windows
+        from tickwise.platform import autostart_windows
 
         autostart_windows.disable()  # baseline
         try:
             assert autostart_windows.is_enabled() is False
-            autostart_windows.enable("python.exe -m chronolens")
+            autostart_windows.enable("python.exe -m tickwise")
             assert autostart_windows.is_enabled() is True
         finally:
             autostart_windows.disable()

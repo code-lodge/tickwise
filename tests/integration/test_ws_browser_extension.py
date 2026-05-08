@@ -7,7 +7,7 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
-from chronolens.capture import browser_bridge
+from tickwise.capture import browser_bridge
 
 
 @pytest.fixture(autouse=True)

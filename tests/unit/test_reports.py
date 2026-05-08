@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from chronolens.db.connection import transaction
-from chronolens.reports.csv_export import to_csv
-from chronolens.reports.generator import ReportRequest, generate
-from chronolens.reports.pdf_export import render_html, to_pdf
+from tickwise.db.connection import transaction
+from tickwise.reports.csv_export import to_csv
+from tickwise.reports.generator import ReportRequest, generate
+from tickwise.reports.pdf_export import render_html, to_pdf
 
 
 def _seed_session(

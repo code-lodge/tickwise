@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.platform.paths."""
+"""Unit tests for tickwise.platform.paths."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
-from chronolens.platform import paths
+from tickwise.platform import paths
 
 
 def _run_with_platform(platform: str, **env_overrides: str | None) -> tuple[Path, Path]:
@@ -29,7 +29,7 @@ def _run_with_platform(platform: str, **env_overrides: str | None) -> tuple[Path
 class TestWindowsPaths:
     def test_data_dir_uses_appdata(self) -> None:
         data, _ = _run_with_platform("win32", APPDATA="C:\\Users\\test\\AppData\\Roaming")
-        assert data == Path("C:\\Users\\test\\AppData\\Roaming\\ChronoLens")
+        assert data == Path("C:\\Users\\test\\AppData\\Roaming\\Tickwise")
 
     def test_config_dir_same_as_data_on_windows(self) -> None:
         data, cfg = _run_with_platform("win32", APPDATA="C:\\Users\\test\\AppData\\Roaming")
@@ -44,7 +44,7 @@ class TestWindowsPaths:
 class TestMacOSPaths:
     def test_data_dir_under_library(self) -> None:
         data, _ = _run_with_platform("darwin")
-        assert data == Path.home() / "Library" / "Application Support" / "ChronoLens"
+        assert data == Path.home() / "Library" / "Application Support" / "Tickwise"
 
     def test_config_same_as_data_on_macos(self) -> None:
         data, cfg = _run_with_platform("darwin")
@@ -55,19 +55,19 @@ class TestMacOSPaths:
 class TestLinuxPaths:
     def test_data_dir_default(self) -> None:
         data, _ = _run_with_platform("linux", XDG_DATA_HOME=None, XDG_CONFIG_HOME=None)
-        assert data == Path.home() / ".local" / "share" / "chronolens"
+        assert data == Path.home() / ".local" / "share" / "tickwise"
 
     def test_data_dir_respects_xdg(self) -> None:
         data, _ = _run_with_platform("linux", XDG_DATA_HOME="/custom/data", XDG_CONFIG_HOME=None)
-        assert data == Path("/custom/data/chronolens")
+        assert data == Path("/custom/data/tickwise")
 
     def test_config_dir_default(self) -> None:
         _, cfg = _run_with_platform("linux", XDG_DATA_HOME=None, XDG_CONFIG_HOME=None)
-        assert cfg == Path.home() / ".config" / "chronolens"
+        assert cfg == Path.home() / ".config" / "tickwise"
 
     def test_config_dir_respects_xdg(self) -> None:
         _, cfg = _run_with_platform("linux", XDG_DATA_HOME=None, XDG_CONFIG_HOME="/custom/cfg")
-        assert cfg == Path("/custom/cfg/chronolens")
+        assert cfg == Path("/custom/cfg/tickwise")
 
 
 @pytest.mark.unit
@@ -78,7 +78,7 @@ def test_unsupported_platform_raises() -> None:
 
 @pytest.mark.unit
 def test_data_dir_creates_directory(tmp_path: Path) -> None:
-    expected = tmp_path / "new_dir" / "ChronoLens"
+    expected = tmp_path / "new_dir" / "Tickwise"
     with (
         patch.object(sys, "platform", "win32"),
         patch.dict(os.environ, {"APPDATA": str(tmp_path / "new_dir")}, clear=True),

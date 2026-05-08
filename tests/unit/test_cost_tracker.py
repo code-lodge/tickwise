@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.classification.cost_tracker."""
+"""Unit tests for tickwise.classification.cost_tracker."""
 
 from __future__ import annotations
 
@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from chronolens.classification import cost_tracker
-from chronolens.classification.llm_client import ClassificationResult
-from chronolens.db.connection import get_connection, transaction
+from tickwise.classification import cost_tracker
+from tickwise.classification.llm_client import ClassificationResult
+from tickwise.db.connection import get_connection, transaction
 
 
 def _result(success: bool = True) -> ClassificationResult:

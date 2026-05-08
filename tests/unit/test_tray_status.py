@@ -8,9 +8,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from chronolens import runtime
-from chronolens.capture.window_info import WindowInfo
-from chronolens.tray import (
+from tickwise import runtime
+from tickwise.capture.window_info import WindowInfo
+from tickwise.tray import (
     _COLOR_IDLE,
     _COLOR_NEUTRAL,
     _COLOR_PAUSED,
@@ -43,14 +43,14 @@ class TestFormatDuration:
 @pytest.mark.unit
 class TestStatusText:
     def test_no_loop(self) -> None:
-        assert build_status_text() == "ChronoLens — Not tracking"
+        assert build_status_text() == "Tickwise — Not tracking"
 
     def test_paused(self) -> None:
         loop = MagicMock()
         loop.is_running = True
         loop.is_paused = True
         runtime.set_capture_loop(loop)
-        assert build_status_text() == "ChronoLens — Paused"
+        assert build_status_text() == "Tickwise — Paused"
 
     def test_active_with_session(self) -> None:
         loop = MagicMock()
@@ -65,7 +65,7 @@ class TestStatusText:
         tracker.open_session = open_session
         runtime.set_session_tracker(tracker)
 
-        assert build_status_text().startswith("ChronoLens — code.exe")
+        assert build_status_text().startswith("Tickwise — code.exe")
 
 
 @pytest.mark.unit

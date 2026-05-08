@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from chronolens.db.connection import transaction
+from tickwise.db.connection import transaction
 
 
 def _seed_session_today(project_name: str = "Acme", duration: int = 3600) -> None:
@@ -91,7 +91,7 @@ class TestMobileEndpoints:
         assert rows[0]["project_name"] == "Alpha"
 
     def test_pomodoro_start_via_mobile(self, client: TestClient) -> None:
-        from chronolens import runtime
+        from tickwise import runtime
 
         runtime.set_pomodoro_timer(None)
         token = _pair(client)
@@ -103,7 +103,7 @@ class TestMobileEndpoints:
         assert r.json()["state"] == "focus"
 
     def test_pomodoro_invalid_target(self, client: TestClient) -> None:
-        from chronolens import runtime
+        from tickwise import runtime
 
         runtime.set_pomodoro_timer(None)
         token = _pair(client)

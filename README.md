@@ -1,20 +1,20 @@
-# ChronoLens
+# Tickwise
 
 **Automatic time tracking for freelancers, powered by LLM classification.**
 
-ChronoLens passively observes your screen, uses Claude or OpenAI to classify what you're working on, and generates billing reports and invoices — without you ever pressing a start/stop button.
+Tickwise passively observes your screen, uses Claude or OpenAI to classify what you're working on, and generates billing reports and invoices — without you ever pressing a start/stop button.
 
 It runs as a system tray app on Windows, macOS, and Linux. All data stays local. A configurable redaction engine strips sensitive content before anything leaves your machine.
 
 ---
 
-## Why ChronoLens?
+## Why Tickwise?
 
 Manual time tracking is broken. You forget to start the timer, you forget to stop it, you forget which project you were on. At the end of the month you're guessing at hours and eating unbilled time.
 
-ChronoLens fixes this by watching what's on your screen — your IDE, browser, terminal, email — and letting an LLM figure out which project and task category each window belongs to. You get accurate, granular time data without changing how you work.
+Tickwise fixes this by watching what's on your screen — your IDE, browser, terminal, email — and letting an LLM figure out which project and task category each window belongs to. You get accurate, granular time data without changing how you work.
 
-**It's not a keylogger.** ChronoLens captures screenshots for OCR text extraction (never saved to disk), counts input events for idle detection (never records keystrokes), and redacts sensitive content before sending anything to the LLM API.
+**It's not a keylogger.** Tickwise captures screenshots for OCR text extraction (never saved to disk), counts input events for idle detection (never records keystrokes), and redacts sensitive content before sending anything to the LLM API.
 
 ---
 
@@ -168,15 +168,15 @@ Single process. Multiple threads. No containers, no cloud infrastructure, no acc
 ### Backend
 
 ```bash
-git clone https://github.com/youruser/chronolens.git
-cd chronolens
+git clone https://github.com/youruser/tickwise.git
+cd tickwise
 
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 
-python -m chronolens
+python -m tickwise
 ```
 
 The system tray icon appears. The API starts on `http://localhost:19532`. On first run the database is created automatically.
@@ -223,7 +223,7 @@ The PWA requires HTTPS for push notifications — enable the Cloudflare Tunnel f
 4. Click "Test" to verify
 5. Optionally set a monthly budget cap
 
-ChronoLens works without an LLM key — it will track your time but mark sessions as "unclassified" until you configure one.
+Tickwise works without an LLM key — it will track your time but mark sessions as "unclassified" until you configure one.
 
 ### Privacy Levels
 
@@ -263,8 +263,8 @@ If you're contributing or using an AI coding agent to build this, start with `AG
 ## Project Structure
 
 ```
-chronolens/
-├── chronolens/              # Python backend
+tickwise/
+├── tickwise/              # Python backend
 │   ├── capture/             # Screen capture, window info, idle detection, change detection
 │   ├── ocr/                 # PaddleOCR wrapper
 │   ├── redaction/           # 4-level privacy redaction engine
@@ -305,7 +305,7 @@ chronolens/
 pytest
 
 # With coverage
-pytest --cov=chronolens --cov-report=term-missing
+pytest --cov=tickwise --cov-report=term-missing
 
 # Unit tests only
 pytest tests/unit/
@@ -318,13 +318,13 @@ pytest -k "redaction"
 
 ```bash
 # Format
-black chronolens/ tests/
+black tickwise/ tests/
 
 # Lint
-ruff check chronolens/ tests/ --fix
+ruff check tickwise/ tests/ --fix
 
 # Type check
-mypy chronolens/
+mypy tickwise/
 
 # All of the above must pass before every commit
 ```
@@ -349,9 +349,9 @@ See `AGENTS.md` §3 for full commit discipline.
 ### Windows
 
 ```bash
-cd dashboard && ng build --configuration=production --output-path=../chronolens/static
+cd dashboard && ng build --configuration=production --output-path=../tickwise/static
 cd ..
-pyinstaller --onedir --noconsole --name ChronoLens chronolens/__main__.py
+pyinstaller --onedir --noconsole --name Tickwise tickwise/__main__.py
 # Then run NSIS installer script
 ```
 
@@ -359,7 +359,7 @@ pyinstaller --onedir --noconsole --name ChronoLens chronolens/__main__.py
 
 ```bash
 # Same dashboard build, then:
-pyinstaller --onedir --noconsole --name ChronoLens chronolens/__main__.py
+pyinstaller --onedir --noconsole --name Tickwise tickwise/__main__.py
 # Package as .app → .dmg
 ```
 
@@ -367,7 +367,7 @@ pyinstaller --onedir --noconsole --name ChronoLens chronolens/__main__.py
 
 ```bash
 # Same dashboard build, then:
-pyinstaller --onedir --noconsole --name ChronoLens chronolens/__main__.py
+pyinstaller --onedir --noconsole --name Tickwise tickwise/__main__.py
 # Package as AppImage
 ```
 
@@ -419,7 +419,7 @@ Currently in development. See [`docs/implementation-phases.md`](docs/implementat
 
 ## Contributing
 
-ChronoLens is built specification-first. Before contributing:
+Tickwise is built specification-first. Before contributing:
 
 1. Read [`AGENTS.md`](AGENTS.md) for development practices
 2. Read the relevant section of [`docs/specification.md`](docs/specification.md)

@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.capture.idle_detector_linux."""
+"""Unit tests for tickwise.capture.idle_detector_linux."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from chronolens.capture import idle_detector_linux as mod
+from tickwise.capture import idle_detector_linux as mod
 
 
 @pytest.mark.unit

@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.sessions.tracker."""
+"""Unit tests for tickwise.sessions.tracker."""
 
 from __future__ import annotations
 
@@ -7,9 +7,9 @@ from pathlib import Path
 
 import pytest
 
-from chronolens.capture.window_info import WindowInfo
-from chronolens.db.connection import get_connection
-from chronolens.sessions.tracker import (
+from tickwise.capture.window_info import WindowInfo
+from tickwise.db.connection import get_connection
+from tickwise.sessions.tracker import (
     SessionTracker,
     today_total_seconds,
     total_seconds_since,

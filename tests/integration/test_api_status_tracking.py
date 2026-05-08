@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
-from chronolens import runtime
+from tickwise import runtime
 
 
 @pytest.fixture(autouse=True)

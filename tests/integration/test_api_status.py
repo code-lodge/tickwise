@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from chronolens import __version__
+from tickwise import __version__
 
 
 @pytest.mark.integration

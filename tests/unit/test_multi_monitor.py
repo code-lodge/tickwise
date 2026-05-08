@@ -6,8 +6,8 @@ from unittest.mock import patch
 
 import pytest
 
-from chronolens.capture.loop import _enabled_monitor_indices
-from chronolens.capture.screenshot import MonitorInfo
+from tickwise.capture.loop import _enabled_monitor_indices
+from tickwise.capture.screenshot import MonitorInfo
 
 
 @pytest.mark.unit
@@ -40,7 +40,7 @@ class TestEnabledMonitorIndices:
         assert _enabled_monitor_indices(detected) == [1, 2]
 
     def test_disabled_monitor_filtered(self, tmp_db) -> None:
-        from chronolens.db.connection import transaction
+        from tickwise.db.connection import transaction
 
         with transaction() as conn:
             conn.execute("INSERT INTO monitor_preferences (monitor_index, enabled) VALUES (?, 0)", (2,))
@@ -52,7 +52,7 @@ class TestEnabledMonitorIndices:
         assert _enabled_monitor_indices(detected) == [1]
 
     def test_unknown_monitor_defaults_enabled(self, tmp_db) -> None:
-        from chronolens.db.connection import transaction
+        from tickwise.db.connection import transaction
 
         with transaction() as conn:
             conn.execute("INSERT INTO monitor_preferences (monitor_index, enabled) VALUES (?, 1)", (1,))
@@ -66,8 +66,8 @@ class TestEnabledMonitorIndices:
 @pytest.mark.unit
 class TestPickFocusedMonitor:
     def test_single_monitor_returns_only_index(self) -> None:
-        from chronolens.capture.loop import CaptureLoop
-        from chronolens.capture.screenshot import Screenshot
+        from tickwise.capture.loop import CaptureLoop
+        from tickwise.capture.screenshot import Screenshot
 
         loop = CaptureLoop()
         loop._capturer = None
@@ -75,8 +75,8 @@ class TestPickFocusedMonitor:
         assert loop._pick_focused_monitor(shots) == 1
 
     def test_window_center_on_secondary(self) -> None:
-        from chronolens.capture.loop import CaptureLoop
-        from chronolens.capture.screenshot import Screenshot
+        from tickwise.capture.loop import CaptureLoop
+        from tickwise.capture.screenshot import Screenshot
 
         loop = CaptureLoop()
 
@@ -93,12 +93,12 @@ class TestPickFocusedMonitor:
             1: Screenshot(width=1920, height=1080, bgra=b"", monitor_index=1),
             2: Screenshot(width=2560, height=1440, bgra=b"", monitor_index=2),
         }
-        with patch("chronolens.capture.loop.get_window_center", return_value=(2500, 200)):
+        with patch("tickwise.capture.loop.get_window_center", return_value=(2500, 200)):
             assert loop._pick_focused_monitor(shots) == 2
 
     def test_unknown_window_center_falls_back_to_last_focused(self) -> None:
-        from chronolens.capture.loop import CaptureLoop
-        from chronolens.capture.screenshot import Screenshot
+        from tickwise.capture.loop import CaptureLoop
+        from tickwise.capture.screenshot import Screenshot
 
         loop = CaptureLoop()
         loop._last_focused_index = 2
@@ -115,5 +115,5 @@ class TestPickFocusedMonitor:
             1: Screenshot(width=1920, height=1080, bgra=b"", monitor_index=1),
             2: Screenshot(width=2560, height=1440, bgra=b"", monitor_index=2),
         }
-        with patch("chronolens.capture.loop.get_window_center", return_value=None):
+        with patch("tickwise.capture.loop.get_window_center", return_value=None):
             assert loop._pick_focused_monitor(shots) == 2

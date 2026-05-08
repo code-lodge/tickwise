@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.capture.window_info dispatcher."""
+"""Unit tests for tickwise.capture.window_info dispatcher."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import sys
 
 import pytest
 
-from chronolens.capture.window_info import WindowInfo, get_active_window
+from tickwise.capture.window_info import WindowInfo, get_active_window
 
 
 @pytest.mark.unit
@@ -24,7 +24,7 @@ class TestWindowInfoDispatcher:
 
     @pytest.mark.skipif(sys.platform != "win32", reason="Windows-only")
     def test_windows_backend_imports(self) -> None:
-        from chronolens.capture.window_info_windows import get_active_window as gw
+        from tickwise.capture.window_info_windows import get_active_window as gw
 
         info = gw()
         assert isinstance(info, WindowInfo)

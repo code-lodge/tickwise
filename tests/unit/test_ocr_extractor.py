@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.ocr.extractor (without paddleocr installed)."""
+"""Unit tests for tickwise.ocr.extractor (without paddleocr installed)."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from chronolens.capture.screenshot import Screenshot
-from chronolens.ocr import extractor
+from tickwise.capture.screenshot import Screenshot
+from tickwise.ocr import extractor
 
 
 @pytest.fixture(autouse=True)

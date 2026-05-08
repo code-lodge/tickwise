@@ -36,7 +36,7 @@ $("btn-test").addEventListener("click", () => {
   $("test-result").className = "";
   browserAPI.runtime.sendMessage({ type: "ping-host", host }, (resp) => {
     if (resp && resp.ok) {
-      $("test-result").textContent = `Connected to ChronoLens v${resp.status.version}`;
+      $("test-result").textContent = `Connected to Tickwise v${resp.status.version}`;
       $("test-result").className = "ok";
     } else {
       $("test-result").textContent = (resp && resp.error) || "Cannot reach host";

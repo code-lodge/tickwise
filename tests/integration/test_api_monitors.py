@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
-from chronolens.capture.screenshot import MonitorInfo
+from tickwise.capture.screenshot import MonitorInfo
 
 
 def _fake_detect():
@@ -21,7 +21,7 @@ def _fake_detect():
 class TestListMonitors:
     def test_returns_detected_monitors(self, client: TestClient) -> None:
         with patch(
-            "chronolens.api.routes_monitors._detect_monitors",
+            "tickwise.api.routes_monitors._detect_monitors",
             return_value=_fake_detect(),
         ):
             r = client.get("/api/monitors")
@@ -34,7 +34,7 @@ class TestListMonitors:
         assert rows[0]["is_primary"] is True
 
     def test_handles_no_monitors(self, client: TestClient) -> None:
-        with patch("chronolens.api.routes_monitors._detect_monitors", return_value=[]):
+        with patch("tickwise.api.routes_monitors._detect_monitors", return_value=[]):
             r = client.get("/api/monitors")
         assert r.status_code == 200
         assert r.json() == []
@@ -44,7 +44,7 @@ class TestListMonitors:
 class TestUpdateMonitor:
     def test_update_persists(self, client: TestClient) -> None:
         with patch(
-            "chronolens.api.routes_monitors._detect_monitors",
+            "tickwise.api.routes_monitors._detect_monitors",
             return_value=_fake_detect(),
         ):
             r = client.put(
@@ -59,7 +59,7 @@ class TestUpdateMonitor:
 
     def test_setting_primary_clears_others(self, client: TestClient) -> None:
         with patch(
-            "chronolens.api.routes_monitors._detect_monitors",
+            "tickwise.api.routes_monitors._detect_monitors",
             return_value=_fake_detect(),
         ):
             client.put("/api/monitors/1", json={"enabled": True, "is_primary": True})
@@ -79,7 +79,7 @@ class TestDisconnectedMonitor:
     def test_can_save_prefs_for_disconnected(self, client: TestClient) -> None:
         # Detect returns nothing — but the user can still save a preference for
         # a monitor they intend to use later.
-        with patch("chronolens.api.routes_monitors._detect_monitors", return_value=[]):
+        with patch("tickwise.api.routes_monitors._detect_monitors", return_value=[]):
             r = client.put(
                 "/api/monitors/3",
                 json={"label": "On the road", "enabled": True, "is_primary": False},

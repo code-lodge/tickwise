@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.capture.screenshot."""
+"""Unit tests for tickwise.capture.screenshot."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from chronolens.capture.screenshot import ScreenCapturer, Screenshot
+from tickwise.capture.screenshot import ScreenCapturer, Screenshot
 
 
 @pytest.mark.unit
@@ -38,7 +38,7 @@ class TestScreenCapturer:
         instance.grab.return_value = fake_grab
         fake_mss.mss = MagicMock(return_value=instance)
 
-        import chronolens.capture.screenshot as mod
+        import tickwise.capture.screenshot as mod
 
         monkeypatch.setattr(mod, "mss", fake_mss)
         monkeypatch.setattr(mod, "_MSS_AVAILABLE", True)
@@ -50,14 +50,14 @@ class TestScreenCapturer:
         instance.grab.assert_called_once_with(instance.monitors[1])
 
     def test_no_mss_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        import chronolens.capture.screenshot as mod
+        import tickwise.capture.screenshot as mod
 
         monkeypatch.setattr(mod, "_MSS_AVAILABLE", False)
         with pytest.raises(RuntimeError):
             ScreenCapturer()
 
     def test_context_manager_closes(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        import chronolens.capture.screenshot as mod
+        import tickwise.capture.screenshot as mod
 
         instance: Any = MagicMock()
         instance.monitors = [{}, {"top": 0, "left": 0, "width": 1, "height": 1}]

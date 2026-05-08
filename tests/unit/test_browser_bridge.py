@@ -7,8 +7,8 @@ from unittest.mock import patch
 
 import pytest
 
-from chronolens.capture import browser_bridge
-from chronolens.redaction.engine import RedactionEngine
+from tickwise.capture import browser_bridge
+from tickwise.redaction.engine import RedactionEngine
 
 
 @pytest.fixture(autouse=True)
@@ -24,14 +24,14 @@ class TestBridge:
 
     def test_update_then_latest(self) -> None:
         browser_bridge.update(
-            url="https://github.com/code-lodge/chronolens",
-            title="ChronoLens",
+            url="https://github.com/code-lodge/tickwise",
+            title="Tickwise",
             content_snippet="Some page text",
         )
         ctx = browser_bridge.latest()
         assert ctx is not None
-        assert ctx.url == "https://github.com/code-lodge/chronolens"
-        assert ctx.title == "ChronoLens"
+        assert ctx.url == "https://github.com/code-lodge/tickwise"
+        assert ctx.title == "Tickwise"
 
     def test_empty_update_ignored(self) -> None:
         browser_bridge.update(None, None, None)
@@ -45,7 +45,7 @@ class TestBridge:
     def test_stale_context_returns_none(self) -> None:
         browser_bridge.update(url="https://x", title="t", content_snippet=None)
         # Advance time well past the staleness window.
-        with patch("chronolens.capture.browser_bridge.time.monotonic", return_value=time.monotonic() + 60):
+        with patch("tickwise.capture.browser_bridge.time.monotonic", return_value=time.monotonic() + 60):
             assert browser_bridge.latest() is None
 
 

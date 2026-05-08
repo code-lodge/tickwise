@@ -7,12 +7,12 @@ from pathlib import Path
 
 import pytest
 
-from chronolens.calendar.provider import CalendarProvider, SyncReport
-from chronolens.calendar.sync_service import (
+from tickwise.calendar.provider import CalendarProvider, SyncReport
+from tickwise.calendar.sync_service import (
     CalendarSyncService,
     build_provider_for_row,
 )
-from chronolens.db.connection import get_connection, transaction
+from tickwise.db.connection import get_connection, transaction
 
 
 def _seed_session(started: datetime, duration: int = 600) -> int:
@@ -53,7 +53,7 @@ class TestSyncService:
                     events_pushed=len(sessions),
                 )
 
-        from chronolens.calendar import sync_service as svc
+        from tickwise.calendar import sync_service as svc
 
         monkeypatch.setattr(
             svc,
@@ -89,7 +89,7 @@ class TestSyncService:
             def push_sessions(self, sessions: list[dict]) -> SyncReport:
                 raise RuntimeError("something bad")
 
-        from chronolens.calendar import sync_service as svc
+        from tickwise.calendar import sync_service as svc
 
         monkeypatch.setattr(
             svc,
@@ -137,7 +137,7 @@ class TestCalDAVProvider:
         # Force the lazy import to fail.
         import builtins
 
-        from chronolens.calendar.caldav_provider import CalDAVProvider
+        from tickwise.calendar.caldav_provider import CalDAVProvider
 
         real_import = builtins.__import__
 
@@ -152,7 +152,7 @@ class TestCalDAVProvider:
         assert report.errors == ["caldav library not installed"]
 
     def test_missing_url_records_error(self) -> None:
-        from chronolens.calendar.caldav_provider import CalDAVProvider
+        from tickwise.calendar.caldav_provider import CalDAVProvider
 
         provider = CalDAVProvider(1, "x", {})
         report = provider.push_sessions([{"id": 1}])
@@ -161,7 +161,7 @@ class TestCalDAVProvider:
         assert report.errors
 
     def test_no_sessions_returns_empty_report(self) -> None:
-        from chronolens.calendar.caldav_provider import CalDAVProvider
+        from tickwise.calendar.caldav_provider import CalDAVProvider
 
         provider = CalDAVProvider(1, "x", {"url": "https://"})
         report = provider.push_sessions([])
@@ -173,8 +173,8 @@ class TestCalDAVProvider:
 @pytest.mark.unit
 class TestGoogleProvider:
     def test_missing_token_ref(self, monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
-        from chronolens.calendar.google_provider import GoogleCalendarProvider
-        from chronolens.crypto import keyring
+        from tickwise.calendar.google_provider import GoogleCalendarProvider
+        from tickwise.crypto import keyring
 
         monkeypatch.setattr(keyring, "_get_keyring", lambda: None)
         monkeypatch.setattr(keyring, "data_dir", lambda: tmp_path)
@@ -185,8 +185,8 @@ class TestGoogleProvider:
         assert "no token_ref" in report.errors[0]
 
     def test_missing_token_in_keyring(self, monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
-        from chronolens.calendar.google_provider import GoogleCalendarProvider
-        from chronolens.crypto import keyring
+        from tickwise.calendar.google_provider import GoogleCalendarProvider
+        from tickwise.crypto import keyring
 
         monkeypatch.setattr(keyring, "_get_keyring", lambda: None)
         monkeypatch.setattr(keyring, "data_dir", lambda: tmp_path)
@@ -199,8 +199,8 @@ class TestGoogleProvider:
     def test_request_uses_bearer(self, monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
         import httpx
 
-        from chronolens.calendar.google_provider import GoogleCalendarProvider
-        from chronolens.crypto import keyring
+        from tickwise.calendar.google_provider import GoogleCalendarProvider
+        from tickwise.crypto import keyring
 
         monkeypatch.setattr(keyring, "_get_keyring", lambda: None)
         monkeypatch.setattr(keyring, "data_dir", lambda: tmp_path)
@@ -216,7 +216,7 @@ class TestGoogleProvider:
 
         client = httpx.Client(transport=httpx.MockTransport(handler))
         # Patch the module's httpx.Client to return our mocked one.
-        import chronolens.calendar.google_provider as mod
+        import tickwise.calendar.google_provider as mod
 
         class _CM:
             def __enter__(self) -> httpx.Client:

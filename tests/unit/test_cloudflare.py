@@ -8,11 +8,11 @@ from unittest.mock import MagicMock
 import httpx
 import pytest
 
-from chronolens.cloudflare import binary as binary_mod
-from chronolens.cloudflare import setup as setup_mod
-from chronolens.cloudflare.api_client import CloudflareAPIClient, CloudflareAPIError
-from chronolens.cloudflare.tunnel_manager import TunnelManager
-from chronolens.crypto import keyring
+from tickwise.cloudflare import binary as binary_mod
+from tickwise.cloudflare import setup as setup_mod
+from tickwise.cloudflare.api_client import CloudflareAPIClient, CloudflareAPIError
+from tickwise.cloudflare.tunnel_manager import TunnelManager
+from tickwise.crypto import keyring
 
 
 def _success(payload: dict) -> dict:
@@ -40,7 +40,7 @@ class TestCloudflareAPIClient:
             return httpx.Response(200, json=_success({"id": "tun-1", "token": "T"}))
 
         client = CloudflareAPIClient(api_token="tok", http=_make_client(handler))
-        result = client.create_tunnel("acct-1", "chronolens")
+        result = client.create_tunnel("acct-1", "tickwise")
         assert result["id"] == "tun-1"
 
     def test_failure_response_raises(self) -> None:
@@ -142,7 +142,7 @@ class TestBinary:
 @pytest.mark.unit
 class TestTunnelManager:
     def test_start_marks_running_when_subprocess_alive(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        from chronolens.cloudflare import tunnel_manager as tm
+        from tickwise.cloudflare import tunnel_manager as tm
 
         proc = MagicMock()
         proc.poll.return_value = None  # still running
@@ -157,7 +157,7 @@ class TestTunnelManager:
         manager.stop()
 
     def test_start_failure_records_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        from chronolens.cloudflare import tunnel_manager as tm
+        from tickwise.cloudflare import tunnel_manager as tm
 
         def boom(*a: object, **kw: object) -> object:
             raise OSError("missing")

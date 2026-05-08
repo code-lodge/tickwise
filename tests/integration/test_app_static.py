@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 class TestDevFallback:
     def test_root_returns_dev_pointer_when_no_static(self, client: TestClient) -> None:
         r = client.get("/")
-        # When chronolens/static/ is empty (typical in tests), the root
+        # When tickwise/static/ is empty (typical in tests), the root
         # endpoint returns a JSON pointer to /api/docs.
         assert r.status_code == 200
         body = r.json()
@@ -29,8 +29,8 @@ class TestStaticServing:
         (static / "index.html").write_text("<html>built</html>", encoding="utf-8")
         (static / "main.js").write_text("console.log('hi');", encoding="utf-8")
 
-        from chronolens import app as app_module
-        from chronolens.app import create_app
+        from tickwise import app as app_module
+        from tickwise.app import create_app
 
         original = app_module._STATIC_DIR
         try:

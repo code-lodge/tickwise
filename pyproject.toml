@@ -3,7 +3,7 @@ requires = ["setuptools>=70", "wheel"]
 build-backend = "setuptools.backends.legacy:build"
 
 [project]
-name = "chronolens"
+name = "tickwise"
 version = "0.1.0"
 description = "Privacy-conscious automatic time tracking for freelancers"
 requires-python = ">=3.12"
@@ -11,7 +11,7 @@ readme = "README.md"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["chronolens*"]
+include = ["tickwise*"]
 
 # ─── Black ───────────────────────────────────────────────────────────────────
 [tool.black]
@@ -28,7 +28,7 @@ select = ["E", "F", "W", "I", "UP", "B", "C4", "PIE", "RET", "SIM", "TID"]
 ignore = ["E501"]  # line length handled by black
 
 [tool.ruff.lint.isort]
-known-first-party = ["chronolens"]
+known-first-party = ["tickwise"]
 
 # ─── Mypy ────────────────────────────────────────────────────────────────────
 [tool.mypy]
@@ -83,11 +83,11 @@ markers = [
 
 # ─── Coverage ────────────────────────────────────────────────────────────────
 [tool.coverage.run]
-source = ["chronolens"]
+source = ["tickwise"]
 omit = [
     "tests/*",
-    "chronolens/__main__.py",
-    "chronolens/tray.py",        # requires display + pystray installed
+    "tickwise/__main__.py",
+    "tickwise/tray.py",        # requires display + pystray installed
 ]
 
 [tool.coverage.report]

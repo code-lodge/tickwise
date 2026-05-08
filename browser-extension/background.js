@@ -1,7 +1,7 @@
-/* ChronoLens browser bridge — service worker / background script.
+/* Tickwise browser bridge — service worker / background script.
  *
  * Watches the active tab and pushes URL + title (+ optional snippet) to
- * the ChronoLens desktop app over WebSocket. The user can exclude
+ * the Tickwise desktop app over WebSocket. The user can exclude
  * domains and disable content snippets in the options page; both rules
  * apply on the extension side so no excluded data ever leaves the
  * browser.

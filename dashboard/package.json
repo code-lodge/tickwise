@@ -1,10 +1,10 @@
 {
-  "name": "chronolens-dashboard",
+  "name": "tickwise-dashboard",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "start": "ng serve --proxy-config proxy.conf.json",
-    "build": "ng build --configuration=production --output-path=../chronolens/static",
+    "build": "ng build --configuration=production --output-path=../tickwise/static",
     "watch": "ng build --watch --configuration=development"
   },
   "dependencies": {

@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from chronolens.classification.llm_client import ClassificationResult
-from chronolens.crypto import keyring
-from chronolens.db.connection import get_connection, transaction
+from tickwise.classification.llm_client import ClassificationResult
+from tickwise.crypto import keyring
+from tickwise.db.connection import get_connection, transaction
 
 
 @pytest.mark.integration
@@ -97,7 +97,7 @@ class TestTestEndpoint:
         with transaction() as conn:
             conn.execute("UPDATE llm_config SET api_key_ref = 'llm_api_key' WHERE id = 1")
 
-        from chronolens.api import routes_llm
+        from tickwise.api import routes_llm
 
         fake_client_cls = type("FakeClient", (), {})
 

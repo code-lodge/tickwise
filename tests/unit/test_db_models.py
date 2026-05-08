@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.db.models — Pydantic schema validation."""
+"""Unit tests for tickwise.db.models — Pydantic schema validation."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from chronolens.db.models import (
+from tickwise.db.models import (
     Activity,
     CalendarProvider,
     ClassificationCache,

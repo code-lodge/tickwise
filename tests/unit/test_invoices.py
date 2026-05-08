@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import pytest
 
-from chronolens.db.connection import transaction
-from chronolens.invoices.generator import (
+from tickwise.db.connection import transaction
+from tickwise.invoices.generator import (
     DraftInvoice,
     DraftLineItem,
     allocate_invoice_number,
     build_draft,
     default_due_date,
 )
-from chronolens.invoices.pdf_renderer import render_html, to_pdf
+from tickwise.invoices.pdf_renderer import render_html, to_pdf
 
 
 def _seed_project(rate: float = 75.0, name: str = "Acme Site") -> int:

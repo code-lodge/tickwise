@@ -9,17 +9,17 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from chronolens.classification.llm_client import ClassificationResult, LLMClient, LLMError
-from chronolens.classification.pipeline import ClassificationPipeline, _LLMSettings
-from chronolens.classification.queue import ClassificationJob
-from chronolens.db.connection import get_connection, transaction
+from tickwise.classification.llm_client import ClassificationResult, LLMClient, LLMError
+from tickwise.classification.pipeline import ClassificationPipeline, _LLMSettings
+from tickwise.classification.queue import ClassificationJob
+from tickwise.db.connection import get_connection, transaction
 
 
 def _job(activity_id: int = 1, ocr: str = "Working in main.py") -> ClassificationJob:
     return ClassificationJob(
         activity_id=activity_id,
         captured_at=datetime.now(tz=UTC),
-        window_title="ChronoLens — main.py",
+        window_title="Tickwise — main.py",
         process_name="code.exe",
         raw_ocr_text=ocr,
         redacted_text=ocr,

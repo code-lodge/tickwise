@@ -61,7 +61,7 @@ frontend/dist/
 frontend/.angular/
 frontend/.npm/
 
-# ChronoLens runtime data (local dev)
+# Tickwise runtime data (local dev)
 *.db
 *.db-wal
 *.db-shm

@@ -1,4 +1,4 @@
-/* ChronoLens mobile PWA — vanilla JS, no framework.
+/* Tickwise mobile PWA — vanilla JS, no framework.
  *
  * Pairing flow: when the URL contains ?t=<token>, store the token in
  * localStorage and reload at the bare URL so the token is no longer
@@ -7,8 +7,8 @@
  * All authenticated requests include `Authorization: Bearer <token>`.
  */
 
-const TOKEN_KEY = "chronolens.token";
-const HOST_KEY = "chronolens.host";
+const TOKEN_KEY = "tickwise.token";
+const HOST_KEY = "tickwise.host";
 
 const tabsEl = document.getElementById("tabs");
 const appEl = document.getElementById("app");
@@ -94,7 +94,7 @@ function renderPairScreen() {
   appEl.appendChild(el(`
     <div class="pair-screen">
       <div class="logo">⏱️</div>
-      <h1>ChronoLens Mobile</h1>
+      <h1>Tickwise Mobile</h1>
       <p class="muted">Pair this device from the desktop dashboard:<br>
       <strong>Settings → Mobile → Pair Device</strong></p>
       <p class="muted" style="margin-top: 2rem;">Then scan the QR code or enter the token manually below.</p>
@@ -227,7 +227,7 @@ function paintPomodoro(snap) {
   // Web push fallback — fire a Notification when state transitions out of focus/break.
   if (lastNotifiedState && lastNotifiedState !== snap.state && snap.state === "idle") {
     if (window.Notification && Notification.permission === "granted") {
-      new Notification("ChronoLens", { body: `${lastNotifiedState.replace("_", " ")} period ended` });
+      new Notification("Tickwise", { body: `${lastNotifiedState.replace("_", " ")} period ended` });
     }
   }
   lastNotifiedState = snap.state;

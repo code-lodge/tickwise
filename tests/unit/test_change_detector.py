@@ -1,15 +1,15 @@
-"""Unit tests for chronolens.capture.change_detector."""
+"""Unit tests for tickwise.capture.change_detector."""
 
 from __future__ import annotations
 
 import pytest
 
-from chronolens.capture.change_detector import (
+from tickwise.capture.change_detector import (
     ChangeState,
     detect_change,
     hamming_distance,
 )
-from chronolens.capture.screenshot import Screenshot
+from tickwise.capture.screenshot import Screenshot
 
 
 def _solid_screenshot(value: int = 0) -> Screenshot:

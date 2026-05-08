@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from chronolens.redaction.engine import RedactionEngine, redact_for_level
-from chronolens.redaction.levels import LEVEL_DESCRIPTIONS, categories_for_level
-from chronolens.redaction.patterns import (
+from tickwise.redaction.engine import RedactionEngine, redact_for_level
+from tickwise.redaction.levels import LEVEL_DESCRIPTIONS, categories_for_level
+from tickwise.redaction.patterns import (
     L1_PATTERNS,
     L2_PATTERNS,
     is_loopback_ip,

@@ -1,6 +1,6 @@
-# ChronoLens — Implementation Phases
+# Tickwise — Implementation Phases
 
-Companion document to `chronolens-build-spec-v3.md`. This breaks the full product into ordered implementation phases, each producing a testable, usable milestone. Phases are strictly sequential — later phases depend on earlier ones. Each phase lists exactly which spec sections it implements, which files it produces, its acceptance criteria, and estimated complexity.
+Companion document to `tickwise-build-spec-v3.md`. This breaks the full product into ordered implementation phases, each producing a testable, usable milestone. Phases are strictly sequential — later phases depend on earlier ones. Each phase lists exactly which spec sections it implements, which files it produces, its acceptance criteria, and estimated complexity.
 
 **Primary development platform**: Build and test on your own OS first (Windows / Linux / macOS). Cross-platform abstraction layers are introduced in Phase 2, but full multi-platform validation happens in Phase 7.
 
@@ -48,8 +48,8 @@ Phase 11 ── Packaging, Polish & Release              ███████�
 ### Files Produced
 
 ```
-chronolens/
-├── chronolens/
+tickwise/
+├── tickwise/
 │   ├── __init__.py
 │   ├── __main__.py                  # Entry point: init DB → start uvicorn → start tray
 │   ├── app.py                       # FastAPI app with /api/status
@@ -89,7 +89,7 @@ chronolens/
 
 ### Acceptance Criteria
 
-- [ ] `python -m chronolens` starts without errors
+- [ ] `python -m tickwise` starts without errors
 - [ ] System tray icon appears with "Quit" menu item
 - [ ] SQLite database created at correct platform path with all tables from §6
 - [ ] `GET http://localhost:19532/api/status` returns `{"status": "ok", "version": "0.1.0", "db_size_bytes": ...}`
@@ -150,7 +150,7 @@ chronolens/
 ### Files Produced
 
 ```
-chronolens/capture/
+tickwise/capture/
 ├── loop.py                          # Main capture loop thread
 ├── screenshot.py                    # mss wrapper, primary monitor only
 ├── window_info.py                   # Dispatcher (imports current-platform module)
@@ -159,13 +159,13 @@ chronolens/capture/
 ├── idle_detector_{platform}.py      # For your current OS only
 ├── change_detector.py               # dhash comparison
 
-chronolens/ocr/
+tickwise/ocr/
 ├── extractor.py                     # PaddleOCR wrapper with downscaling
 
-chronolens/sessions/
+tickwise/sessions/
 ├── tracker.py                       # Session aggregation logic
 
-chronolens/api/
+tickwise/api/
 ├── routes_sessions.py               # GET /api/sessions, GET /api/sessions/{id}
 ```
 
@@ -189,7 +189,7 @@ Updated files: `__main__.py` (launch capture + session threads), `tray.py` (live
 
 ## PHASE 2 — CROSS-PLATFORM ABSTRACTION
 
-**Goal**: Implement platform-specific modules for all three OSes. After this phase, ChronoLens runs on Windows, macOS, and Linux (single-monitor).
+**Goal**: Implement platform-specific modules for all three OSes. After this phase, Tickwise runs on Windows, macOS, and Linux (single-monitor).
 
 ### Spec Sections Implemented
 
@@ -214,7 +214,7 @@ Each module exposes the same interface — the dispatcher module does `platform.
 ### Files Produced
 
 ```
-chronolens/capture/
+tickwise/capture/
 ├── window_info_windows.py           # win32gui
 ├── window_info_macos.py             # NSWorkspace + Accessibility
 ├── window_info_linux.py             # xdotool / python-xlib / sway IPC
@@ -223,14 +223,14 @@ chronolens/capture/
 ├── idle_detector_macos.py           # IOKit HID
 ├── idle_detector_linux.py           # XScreenSaver / D-Bus
 
-chronolens/platform/
+tickwise/platform/
 ├── autostart.py                     # Dispatcher
 ├── autostart_windows.py             # Registry
 ├── autostart_macos.py               # LaunchAgent plist
 ├── autostart_linux.py               # XDG .desktop
 ├── notifications.py                 # Cross-platform (plyer + fallbacks)
 
-chronolens/crypto/
+tickwise/crypto/
 ├── keyring.py                       # Dispatcher + fallback to encrypted file
 ├── keyring_windows.py               # DPAPI
 ├── keyring_macos.py                 # macOS Keychain
@@ -267,7 +267,7 @@ This phase has internal dependencies — build in this order:
 **Step 3a — Redaction Engine**
 
 ```
-chronolens/redaction/
+tickwise/redaction/
 ├── engine.py                        # RedactionEngine class, orchestrates levels + custom
 ├── levels.py                        # Level 1-4 definitions: which categories apply at each level
 ├── patterns.py                      # All regex patterns by category, organized as dict
@@ -291,7 +291,7 @@ Write thorough unit tests for every category at every level. Edge cases: overlap
 **Step 3b — LLM Clients**
 
 ```
-chronolens/classification/
+tickwise/classification/
 ├── llm_client.py                    # Abstract base: classify(context) → ClassificationResult
 ├── claude_client.py                 # Anthropic Messages API via httpx
 ├── openai_client.py                 # OpenAI Chat Completions API via httpx
@@ -303,7 +303,7 @@ Implement the abstract client interface, then both providers. Test each with a r
 **Step 3c — Classification Pipeline**
 
 ```
-chronolens/classification/
+tickwise/classification/
 ├── pipeline.py                      # Orchestrator: queue consumer → redact → cache check → LLM → store
 ├── cache.py                         # Classification cache: SHA-256 key, TTL, hit tracking
 ├── cost_tracker.py                  # Token estimation, cost calculation, budget enforcement
@@ -314,7 +314,7 @@ Connect everything: the classification queue consumer thread pulls items, runs r
 **Step 3d — API Endpoints**
 
 ```
-chronolens/api/
+tickwise/api/
 ├── routes_llm.py                    # GET/PUT /api/llm/config, GET /api/llm/usage, POST /api/llm/test
 ├── routes_redaction.py              # GET/PUT /api/redaction/level, CRUD custom rules, POST preview
 ```
@@ -360,7 +360,7 @@ chronolens/api/
 
 ```bash
 cd dashboard
-ng new chronolens-dashboard --standalone --style=css --routing --skip-tests
+ng new tickwise-dashboard --standalone --style=css --routing --skip-tests
 ```
 
 Set up: `app.routes.ts` with lazy-loaded routes, `api.service.ts` with `HttpClient` base, `websocket.service.ts`, proxy config for development.
@@ -387,7 +387,7 @@ Day/week/month view. Clickable sessions with detail panel. Edit project assignme
 
 **Step 4g — Build integration**
 
-`ng build --configuration=production --output-path=../chronolens/static` → FastAPI serves from `static/` directory. Update `__main__.py` to open `http://localhost:19532` in default browser when tray icon "Open Dashboard" is clicked.
+`ng build --configuration=production --output-path=../tickwise/static` → FastAPI serves from `static/` directory. Update `__main__.py` to open `http://localhost:19532` in default browser when tray icon "Open Dashboard" is clicked.
 
 ### Files Produced
 
@@ -422,7 +422,7 @@ dashboard/
 Backend additions:
 
 ```
-chronolens/api/
+tickwise/api/
 ├── routes_projects.py               # Full CRUD
 ├── routes_sessions.py               # Add PUT, split, merge
 ```
@@ -503,17 +503,17 @@ Reports page: type selector, date range, project filter, inline charts, export b
 ### Files Produced
 
 ```
-chronolens/calendar/
+tickwise/calendar/
 ├── provider.py, caldav_provider.py, ics_feed.py, ics_export.py
 ├── google_provider.py, sync_service.py
 
-chronolens/cloudflare/
+tickwise/cloudflare/
 ├── api_client.py, tunnel_manager.py, setup.py, binary.py
 
-chronolens/reports/
+tickwise/reports/
 ├── generator.py, pdf_export.py, csv_export.py
 
-chronolens/api/
+tickwise/api/
 ├── routes_calendar.py, routes_cloudflare.py, routes_reports.py
 
 dashboard/src/app/pages/
@@ -581,14 +581,14 @@ Invoice list with status badges. "Create Invoice" wizard: project + date range �
 ### Files Produced
 
 ```
-chronolens/invoices/
+tickwise/invoices/
 ├── generator.py
 ├── pdf_renderer.py
 ├── templates/
 │   ├── default.html
 │   └── default.css
 
-chronolens/api/
+tickwise/api/
 ├── routes_invoices.py
 ├── routes_clients.py
 ├── routes_profile.py
@@ -659,10 +659,10 @@ The timer ticks every second, decrementing remaining time. When a state transiti
 ### Files Produced
 
 ```
-chronolens/pomodoro/
+tickwise/pomodoro/
 ├── timer.py                         # State machine, timer thread
 
-chronolens/api/
+tickwise/api/
 ├── routes_pomodoro.py               # start, stop, status, history, settings
 
 dashboard/src/app/pages/
@@ -692,7 +692,7 @@ dashboard/src/app/models/
 
 ## PHASE 8 — BROWSER EXTENSION
 
-**Goal**: Chrome and Firefox extensions that capture URL, tab title, and content snippets. Send to ChronoLens via WebSocket. Extension popup shows status and Pomodoro controls.
+**Goal**: Chrome and Firefox extensions that capture URL, tab title, and content snippets. Send to Tickwise via WebSocket. Extension popup shows status and Pomodoro controls.
 
 ### Spec Sections Implemented
 
@@ -725,14 +725,14 @@ browser-extension/
 └── icons/
     ├── icon-16.png, icon-48.png, icon-128.png
 
-chronolens/capture/
+tickwise/capture/
 ├── browser_bridge.py                # WebSocket message handler, context storage
 ```
 
 ### Acceptance Criteria
 
 - [ ] Chrome extension loads unpacked, connects WebSocket to localhost:19532
-- [ ] Tab switch → sends URL + title + content snippet to ChronoLens
+- [ ] Tab switch → sends URL + title + content snippet to Tickwise
 - [ ] URL change within tab → sends updated context
 - [ ] LLM classification uses browser URL when available (verify in `llm_reasoning`)
 - [ ] Extension popup: shows connection status (green/red), current classification
@@ -758,7 +758,7 @@ chronolens/capture/
 
 ### Implementation Details
 
-**Backend**: `routes_mobile.py` with all mobile endpoints. `auth.py` middleware for bearer token validation. QR code generation endpoint (render QR containing `chronolens://{hostname}/api/mobile?token={token}`).
+**Backend**: `routes_mobile.py` with all mobile endpoints. `auth.py` middleware for bearer token validation. QR code generation endpoint (render QR containing `tickwise://{hostname}/api/mobile?token={token}`).
 
 **Tunnel update**: when mobile access is enabled, update Cloudflare Tunnel ingress to include `/api/mobile/*` path.
 
@@ -781,7 +781,7 @@ mobile/
 │   ├── manifest.webmanifest
 │   └── service-worker.js
 
-chronolens/api/
+tickwise/api/
 ├── routes_mobile.py
 ├── auth.py                          # Bearer token middleware
 
@@ -845,9 +845,9 @@ Add multi-monitor settings to dashboard Settings page:
 ### Files Modified
 
 ```
-chronolens/capture/screenshot.py      # Multi-monitor capture
-chronolens/capture/loop.py            # Focused monitor routing, hash tracking for all
-chronolens/capture/window_info_*.py   # get_focused_monitor() per platform
+tickwise/capture/screenshot.py      # Multi-monitor capture
+tickwise/capture/loop.py            # Focused monitor routing, hash tracking for all
+tickwise/capture/window_info_*.py   # get_focused_monitor() per platform
 
 dashboard/src/app/pages/settings/     # Multi-monitor settings section
 ```
@@ -880,20 +880,20 @@ dashboard/src/app/pages/settings/     # Multi-monitor settings section
 
 **Windows**:
 
-- PyInstaller `--onedir --noconsole` → `ChronoLens/` directory
-- NSIS installer: `chronolens-setup-{version}.exe`
+- PyInstaller `--onedir --noconsole` → `Tickwise/` directory
+- NSIS installer: `tickwise-setup-{version}.exe`
   - Install location, start menu shortcut, uninstaller
   - Bundles PaddleOCR models + cloudflared
 
 **macOS**:
 
 - PyInstaller → `.app` bundle
-- DMG: `ChronoLens-{version}.dmg`
+- DMG: `Tickwise-{version}.dmg`
   - Drag to Applications, code signing (if dev cert available)
 
 **Linux**:
 
-- PyInstaller → AppImage: `ChronoLens-{version}.AppImage`
+- PyInstaller → AppImage: `Tickwise-{version}.AppImage`
   - Self-contained, `chmod +x`, run from anywhere
 
 **Browser Extension**:
@@ -903,7 +903,7 @@ dashboard/src/app/pages/settings/     # Multi-monitor settings section
 
 **Mobile PWA**:
 
-- Built into `chronolens/static/mobile/` — no separate packaging needed
+- Built into `tickwise/static/mobile/` — no separate packaging needed
 
 ### Polish Checklist
 

@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.crypto.keyring (file fallback path)."""
+"""Unit tests for tickwise.crypto.keyring (file fallback path)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from chronolens.crypto import keyring as kr
+from tickwise.crypto import keyring as kr
 
 
 @pytest.fixture(autouse=True)

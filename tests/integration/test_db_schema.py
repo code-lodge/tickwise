@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from chronolens.db.connection import get_connection
-from chronolens.db.schema import SCHEMA_VERSION
+from tickwise.db.connection import get_connection
+from tickwise.db.schema import SCHEMA_VERSION
 
 
 @pytest.mark.integration
@@ -52,7 +52,7 @@ class TestSchemaInit:
 
     def test_idempotent_init(self, tmp_db: Path) -> None:
         """Calling init_db() twice must not raise or duplicate data."""
-        from chronolens.db.schema import init_db
+        from tickwise.db.schema import init_db
 
         init_db()
         conn = get_connection()

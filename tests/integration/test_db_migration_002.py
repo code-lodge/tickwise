@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from chronolens.db.connection import get_connection
+from tickwise.db.connection import get_connection
 
 
 @pytest.mark.integration

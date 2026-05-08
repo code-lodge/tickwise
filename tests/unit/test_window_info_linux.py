@@ -1,4 +1,4 @@
-"""Unit tests for chronolens.capture.window_info_linux."""
+"""Unit tests for tickwise.capture.window_info_linux."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from chronolens.capture import window_info_linux as mod
-from chronolens.capture.window_info import WindowInfo
+from tickwise.capture import window_info_linux as mod
+from tickwise.capture.window_info import WindowInfo
 
 
 @pytest.mark.unit
