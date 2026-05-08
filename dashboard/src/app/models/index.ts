@@ -41,6 +41,55 @@ export interface Client {
   name: string;
   email: string | null;
   timezone: string;
+  address?: string | null;
+  tax_id?: string | null;
+}
+
+export interface FreelancerProfile {
+  name: string;
+  email: string;
+  company: string | null;
+  address: string | null;
+  tax_id: string | null;
+  iban: string | null;
+  bank_name: string | null;
+  payment_terms: string | null;
+  default_currency: string;
+  default_hourly_rate: number | null;
+  timezone: string;
+  invoice_prefix: string;
+  invoice_next_number: number;
+  invoice_default_due_days: number;
+  invoice_default_tax_rate: number;
+  logo_path: string | null;
+}
+
+export interface InvoiceLineItem {
+  id: number;
+  description: string;
+  hours: number;
+  rate: number;
+  amount: number;
+  session_id: number | null;
+}
+
+export interface Invoice {
+  id: number;
+  client_id: number | null;
+  project_id: number | null;
+  invoice_number: string;
+  issued_date: string;
+  due_date: string | null;
+  status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  total: number;
+  currency: string;
+  notes: string | null;
+  sent_at: string | null;
+  paid_at: string | null;
+  line_items: InvoiceLineItem[];
 }
 
 export interface Category {

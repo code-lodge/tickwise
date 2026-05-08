@@ -32,6 +32,16 @@ export const routes: Routes = [
       import('./pages/reports/reports.component').then((m) => m.ReportsPageComponent),
   },
   {
+    path: 'clients',
+    loadComponent: () =>
+      import('./pages/clients/clients.component').then((m) => m.ClientsPageComponent),
+  },
+  {
+    path: 'invoices',
+    loadComponent: () =>
+      import('./pages/invoices/invoices.component').then((m) => m.InvoicesPageComponent),
+  },
+  {
     path: 'settings',
     loadComponent: () =>
       import('./pages/settings/settings.component').then((m) => m.SettingsPageComponent),

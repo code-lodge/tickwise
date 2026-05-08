@@ -6,6 +6,8 @@ import {
   Category,
   Client,
   CustomRule,
+  FreelancerProfile,
+  Invoice,
   LLMConfig,
   LLMUsage,
   PreviewResult,
@@ -91,6 +93,54 @@ export class ApiService {
   }
   createClient(c: Partial<Client>): Observable<Client> {
     return this.http.post<Client>(`${this.base}/clients`, c);
+  }
+  updateClient(id: number, c: Partial<Client>): Observable<Client> {
+    return this.http.put<Client>(`${this.base}/clients/${id}`, c);
+  }
+  deleteClient(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/clients/${id}`);
+  }
+
+  // Freelancer profile
+  profile(): Observable<FreelancerProfile> {
+    return this.http.get<FreelancerProfile>(`${this.base}/profile`);
+  }
+  updateProfile(p: Partial<FreelancerProfile>): Observable<FreelancerProfile> {
+    return this.http.put<FreelancerProfile>(`${this.base}/profile`, p);
+  }
+
+  // Invoices
+  invoices(status?: string): Observable<Invoice[]> {
+    return this.http.get<Invoice[]>(`${this.base}/invoices`, {
+      params: status ? { status } : {},
+    });
+  }
+  invoice(id: number): Observable<Invoice> {
+    return this.http.get<Invoice>(`${this.base}/invoices/${id}`);
+  }
+  draftInvoice(payload: {
+    project_id: number;
+    from_date: string;
+    to_date: string;
+    rate_override?: number;
+    tax_rate_override?: number;
+  }): Observable<unknown> {
+    return this.http.post<unknown>(`${this.base}/invoices/draft`, payload);
+  }
+  createInvoice(payload: Partial<Invoice>): Observable<Invoice> {
+    return this.http.post<Invoice>(`${this.base}/invoices`, payload);
+  }
+  updateInvoice(id: number, payload: Partial<Invoice>): Observable<Invoice> {
+    return this.http.put<Invoice>(`${this.base}/invoices/${id}`, payload);
+  }
+  deleteInvoice(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/invoices/${id}`);
+  }
+  markInvoiceSent(id: number): Observable<Invoice> {
+    return this.http.post<Invoice>(`${this.base}/invoices/${id}/mark-sent`, {});
+  }
+  markInvoicePaid(id: number): Observable<Invoice> {
+    return this.http.post<Invoice>(`${this.base}/invoices/${id}/mark-paid`, {});
   }
 
   // Categories
