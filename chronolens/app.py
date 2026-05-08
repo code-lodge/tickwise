@@ -16,7 +16,9 @@ from chronolens.api.routes_calendar import router as calendar_router
 from chronolens.api.routes_categories import router as categories_router
 from chronolens.api.routes_clients import router as clients_router
 from chronolens.api.routes_cloudflare import router as cloudflare_router
+from chronolens.api.routes_invoices import router as invoices_router
 from chronolens.api.routes_llm import router as llm_router
+from chronolens.api.routes_profile import router as profile_router
 from chronolens.api.routes_projects import router as projects_router
 from chronolens.api.routes_redaction import router as redaction_router
 from chronolens.api.routes_reports import router as reports_router
@@ -68,6 +70,8 @@ def create_app() -> FastAPI:
     app.include_router(calendar_router)
     app.include_router(cloudflare_router)
     app.include_router(reports_router)
+    app.include_router(profile_router)
+    app.include_router(invoices_router)
     app.include_router(ws_router)
 
     @app.get("/api/status", tags=["meta"])
