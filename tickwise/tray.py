@@ -182,8 +182,8 @@ def run_tray(on_quit: Callable[[], None]) -> None:
         icon=_build_icon_image(_icon_color()),
         title=build_status_text(),
         menu=pystray.Menu(
-            pystray.MenuItem(build_status_text, None, enabled=False),
-            pystray.MenuItem(build_today_total_text, None, enabled=False),
+            pystray.MenuItem(lambda _item: build_status_text(), None, enabled=False),
+            pystray.MenuItem(lambda _item: build_today_total_text(), None, enabled=False),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Open Dashboard", lambda _icon, _item: _open_dashboard()),
             pystray.MenuItem(

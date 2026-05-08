@@ -3,18 +3,31 @@
 from __future__ import annotations
 
 import logging
+import os
+import sys
 import threading
 
-import uvicorn
+# When packaged with PyInstaller --windowed, sys.stdout/stderr are None.
+# uvicorn's DefaultFormatter calls sys.stdout.isatty() at import time and
+# crashes. Wire stdio to the per-user log file before importing uvicorn.
+if sys.stdout is None or sys.stderr is None:
+    _log_dir = os.path.join(os.environ.get("LOCALAPPDATA") or os.path.expanduser("~/.tickwise"), "Tickwise")
+    os.makedirs(_log_dir, exist_ok=True)
+    _log_path = os.path.join(_log_dir, "tickwise.log")
+    _log_file = open(_log_path, "a", encoding="utf-8", buffering=1)
+    sys.stdout = _log_file
+    sys.stderr = _log_file
 
-from tickwise import runtime
-from tickwise.capture.loop import CaptureLoop
-from tickwise.classification.pipeline import ClassificationWorker
-from tickwise.config import API_HOST, API_PORT
-from tickwise.db.schema import init_db
-from tickwise.pomodoro.timer import PomodoroTimer
-from tickwise.sessions.tracker import SessionTracker
-from tickwise.tray import run_tray
+import uvicorn  # noqa: E402
+
+from tickwise import runtime  # noqa: E402
+from tickwise.capture.loop import CaptureLoop  # noqa: E402
+from tickwise.classification.pipeline import ClassificationWorker  # noqa: E402
+from tickwise.config import API_HOST, API_PORT  # noqa: E402
+from tickwise.db.schema import init_db  # noqa: E402
+from tickwise.pomodoro.timer import PomodoroTimer  # noqa: E402
+from tickwise.sessions.tracker import SessionTracker  # noqa: E402
+from tickwise.tray import run_tray  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,6 +45,7 @@ def _start_api_server() -> threading.Thread:
         port=API_PORT,
         log_level="info",
         loop="asyncio",
+        log_config=None,
     )
     server = uvicorn.Server(config)
 
