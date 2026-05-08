@@ -49,6 +49,7 @@ class Activity(BaseModel):
     phash: str | None = None
     privacy_level: int = 2
     change_detected: bool = False
+    source: str = "pending_classification"
     created_at: datetime | None = None
 
 

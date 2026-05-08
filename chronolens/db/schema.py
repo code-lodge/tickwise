@@ -11,7 +11,7 @@ from chronolens.db.connection import get_connection
 logger = logging.getLogger(__name__)
 
 # Current schema version — bump when adding migrations.
-SCHEMA_VERSION: int = 1
+SCHEMA_VERSION: int = 2
 
 # ─── DDL ─────────────────────────────────────────────────────────────────────
 
@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS activities (
     phash           TEXT,
     privacy_level   INTEGER NOT NULL DEFAULT 2,
     change_detected INTEGER NOT NULL DEFAULT 0,
+    source          TEXT NOT NULL DEFAULT 'pending_classification',
     created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );
 
@@ -243,7 +244,9 @@ CREATE TABLE IF NOT EXISTS mobile_auth_tokens (
 );
 
 CREATE INDEX IF NOT EXISTS idx_activities_captured_at ON activities(captured_at);
+CREATE INDEX IF NOT EXISTS idx_activities_source ON activities(source);
 CREATE INDEX IF NOT EXISTS idx_sessions_started_at ON sessions(started_at);
+CREATE INDEX IF NOT EXISTS idx_sessions_ended_at ON sessions(ended_at);
 CREATE INDEX IF NOT EXISTS idx_sessions_project_id ON sessions(project_id);
 CREATE INDEX IF NOT EXISTS idx_classification_cache_key ON classification_cache(cache_key);
 CREATE INDEX IF NOT EXISTS idx_classification_cache_expires ON classification_cache(expires_at);
@@ -301,6 +304,19 @@ def _migration_001_seed_defaults(conn: sqlite3.Connection) -> None:
     conn.execute("INSERT OR IGNORE INTO cloudflare_config(id) VALUES (1)")
 
 
+def _migration_002_add_activity_source(conn: sqlite3.Connection) -> None:
+    """Add `source` column to activities for tracking classification state.
+
+    Idempotent — only adds the column if it doesn't already exist.
+    """
+    cols = {row["name"] for row in conn.execute("PRAGMA table_info(activities)")}
+    if "source" not in cols:
+        conn.execute("ALTER TABLE activities ADD COLUMN source TEXT NOT NULL DEFAULT 'pending_classification'")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_activities_source ON activities(source)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_ended_at ON sessions(ended_at)")
+
+
 _MIGRATIONS: list[tuple[int, Callable[[sqlite3.Connection], None]]] = [
     (1, _migration_001_seed_defaults),
+    (2, _migration_002_add_activity_source),
 ]
