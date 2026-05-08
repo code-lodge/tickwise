@@ -1,0 +1,6 @@
+# Angular build artifacts
+node_modules/
+dist/
+.angular/
+*.tsbuildinfo
+out-tsc/

@@ -1,0 +1,113 @@
+// Shared TypeScript types mirroring the FastAPI response shapes.
+
+export interface Status {
+  status: string;
+  version: string;
+  uptime_secs: number;
+  tracking: boolean;
+}
+
+export interface Session {
+  id: number;
+  started_at: string;
+  ended_at: string | null;
+  duration_secs: number | null;
+  project_id: number | null;
+  category_id: number | null;
+  description: string | null;
+  tags: string | null;
+  is_manual: number;
+  is_billed: number;
+  invoice_id: number | null;
+  llm_classified: number;
+  confidence: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Project {
+  id: number;
+  name: string;
+  color: string;
+  client_id: number | null;
+  hourly_rate: number | null;
+  currency: string;
+  is_active: boolean;
+  total_seconds: number;
+}
+
+export interface Client {
+  id: number;
+  name: string;
+  email: string | null;
+  timezone: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  color: string;
+  project_id: number | null;
+}
+
+export interface RedactionLevel {
+  level: number;
+  description: string;
+  categories: string[];
+}
+
+export interface CustomRule {
+  id: number;
+  pattern: string;
+  match_mode: 'contains' | 'regex' | 'exact';
+  replacement: string;
+  description: string | null;
+  is_active: boolean;
+}
+
+export interface PreviewResult {
+  redacted_text: string;
+  original_length: number;
+  redacted_length: number;
+  redaction_count: number;
+  categories_hit: string[];
+}
+
+export interface LLMConfig {
+  provider: 'anthropic' | 'openai';
+  model: string;
+  max_tokens: number;
+  temperature: number;
+  monthly_budget_cents: number;
+  is_active: boolean;
+  api_key?: string | null;
+  has_api_key: boolean;
+}
+
+export interface LLMUsage {
+  summary: {
+    calls: number;
+    cache_hits: number;
+    prompt_tokens: number;
+    completion_tokens: number;
+    cost_cents: number;
+  };
+  budget: {
+    spent_cents: number;
+    budget_cents: number;
+    over_budget: boolean;
+  };
+  recent: Array<Record<string, unknown>>;
+}
+
+export interface TodaySummary {
+  total_seconds: number;
+  billable_seconds: number;
+  session_count: number;
+  unclassified_count: number;
+  by_project: Array<{ name: string; color: string; seconds: number }>;
+}
+
+export interface SettingsMap {
+  [key: string]: string;
+}

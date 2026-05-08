@@ -1,0 +1,14 @@
+{
+  "/api": {
+    "target": "http://127.0.0.1:19532",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/ws": {
+    "target": "ws://127.0.0.1:19532",
+    "ws": true,
+    "secure": false,
+    "logLevel": "warn"
+  }
+}
