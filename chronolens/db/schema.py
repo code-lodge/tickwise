@@ -11,7 +11,7 @@ from chronolens.db.connection import get_connection
 logger = logging.getLogger(__name__)
 
 # Current schema version — bump when adding migrations.
-SCHEMA_VERSION: int = 3
+SCHEMA_VERSION: int = 4
 
 # ─── DDL ─────────────────────────────────────────────────────────────────────
 
@@ -405,8 +405,42 @@ def _migration_003_classification_columns(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_llm_usage_log_created_at ON llm_usage_log(created_at)")
 
 
+def _migration_004_invoicing(conn: sqlite3.Connection) -> None:
+    """Phase 6 — extend profile + invoices for full invoicing lifecycle."""
+    # Freelancer profile additions: bank details, logo, defaults.
+    _add_column_if_missing(conn, "freelancer_profile", "iban", "iban TEXT")
+    _add_column_if_missing(conn, "freelancer_profile", "bank_name", "bank_name TEXT")
+    _add_column_if_missing(conn, "freelancer_profile", "logo_path", "logo_path TEXT")
+    _add_column_if_missing(
+        conn,
+        "freelancer_profile",
+        "invoice_default_due_days",
+        "invoice_default_due_days INTEGER NOT NULL DEFAULT 14",
+    )
+    _add_column_if_missing(
+        conn,
+        "freelancer_profile",
+        "invoice_default_tax_rate",
+        "invoice_default_tax_rate REAL NOT NULL DEFAULT 21.0",
+    )
+    _add_column_if_missing(conn, "freelancer_profile", "payment_terms", "payment_terms TEXT")
+
+    # Invoice lifecycle timestamps.
+    _add_column_if_missing(conn, "invoices", "sent_at", "sent_at TEXT")
+    _add_column_if_missing(conn, "invoices", "paid_at", "paid_at TEXT")
+    _add_column_if_missing(conn, "invoices", "project_id", "project_id INTEGER")
+
+    # Client billing extras.
+    _add_column_if_missing(conn, "clients", "address", "address TEXT")
+    _add_column_if_missing(conn, "clients", "tax_id", "tax_id TEXT")
+
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_invoices_client_id ON invoices(client_id)")
+
+
 _MIGRATIONS: list[tuple[int, Callable[[sqlite3.Connection], None]]] = [
     (1, _migration_001_seed_defaults),
     (2, _migration_002_add_activity_source),
     (3, _migration_003_classification_columns),
+    (4, _migration_004_invoicing),
 ]
