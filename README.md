@@ -317,6 +317,6 @@ Tickwise is licensed under the **GNU General Public License v3.0**. See [`LICENS
 <br />
 <br />
 
-Made with care by [Hylke Hellinga](https://github.com/hylkehellinga)
+Made with care by [Hylke Hellinga](https://github.com/simbaclaws)
 
 </div>
