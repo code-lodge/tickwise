@@ -10,6 +10,9 @@ import {
   Invoice,
   LLMConfig,
   LLMUsage,
+  PomodoroHistoryEntry,
+  PomodoroSettings,
+  PomodoroStatus,
   PreviewResult,
   Project,
   RedactionLevel,
@@ -141,6 +144,30 @@ export class ApiService {
   }
   markInvoicePaid(id: number): Observable<Invoice> {
     return this.http.post<Invoice>(`${this.base}/invoices/${id}/mark-paid`, {});
+  }
+
+  // Pomodoro
+  pomodoroStatus(): Observable<PomodoroStatus> {
+    return this.http.get<PomodoroStatus>(`${this.base}/pomodoro/status`);
+  }
+  pomodoroSettings(): Observable<PomodoroSettings> {
+    return this.http.get<PomodoroSettings>(`${this.base}/pomodoro/settings`);
+  }
+  updatePomodoroSettings(s: PomodoroSettings): Observable<PomodoroSettings> {
+    return this.http.put<PomodoroSettings>(`${this.base}/pomodoro/settings`, s);
+  }
+  startPomodoro(target: 'focus' | 'short_break' | 'long_break' = 'focus'): Observable<PomodoroStatus> {
+    return this.http.post<PomodoroStatus>(`${this.base}/pomodoro/start`, null, {
+      params: { target },
+    });
+  }
+  stopPomodoro(): Observable<PomodoroStatus> {
+    return this.http.post<PomodoroStatus>(`${this.base}/pomodoro/stop`, {});
+  }
+  pomodoroHistory(limit = 20): Observable<PomodoroHistoryEntry[]> {
+    return this.http.get<PomodoroHistoryEntry[]>(`${this.base}/pomodoro/history`, {
+      params: { limit },
+    });
   }
 
   // Categories

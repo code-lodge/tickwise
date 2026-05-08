@@ -21,6 +21,7 @@ import { ApiService } from './services/api.service';
         <a routerLink="/reports" routerLinkActive="active">Reports</a>
         <a routerLink="/clients" routerLinkActive="active">Clients</a>
         <a routerLink="/invoices" routerLinkActive="active">Invoices</a>
+        <a routerLink="/pomodoro" routerLinkActive="active">Pomodoro</a>
         <a routerLink="/privacy" routerLinkActive="active">Privacy &amp; LLM</a>
         <a routerLink="/settings" routerLinkActive="active">Settings</a>
       </nav>

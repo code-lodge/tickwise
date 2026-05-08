@@ -160,3 +160,30 @@ export interface TodaySummary {
 export interface SettingsMap {
   [key: string]: string;
 }
+
+export type PomodoroState = 'idle' | 'focus' | 'short_break' | 'long_break';
+
+export interface PomodoroStatus {
+  state: PomodoroState;
+  remaining_secs: number;
+  duration_secs: number;
+  completed_focus_count: number;
+  current_session_id: number | null;
+  started_at: string | null;
+}
+
+export interface PomodoroSettings {
+  work_minutes: number;
+  short_break_minutes: number;
+  long_break_minutes: number;
+  cycles_before_long: number;
+  auto_start: boolean;
+}
+
+export interface PomodoroHistoryEntry {
+  id: number;
+  type: 'work' | 'short_break' | 'long_break';
+  started_at: string;
+  ended_at: string | null;
+  completed: boolean;
+}

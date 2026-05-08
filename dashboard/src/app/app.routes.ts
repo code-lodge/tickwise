@@ -42,6 +42,11 @@ export const routes: Routes = [
       import('./pages/invoices/invoices.component').then((m) => m.InvoicesPageComponent),
   },
   {
+    path: 'pomodoro',
+    loadComponent: () =>
+      import('./pages/pomodoro/pomodoro.component').then((m) => m.PomodoroPageComponent),
+  },
+  {
     path: 'settings',
     loadComponent: () =>
       import('./pages/settings/settings.component').then((m) => m.SettingsPageComponent),
