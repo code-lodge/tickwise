@@ -1,158 +1,227 @@
-/* Tickwise dashboard — base styling. */
+/* Tickwise dashboard — composes the Code Lodge design system.
+ * Tokens and base elements come from design-system.css; this file adds
+ * dashboard-specific layout and the legacy --color-* aliases for
+ * components that were authored before the design system landed.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 
 :root {
-  --color-bg: #f8fafc;
-  --color-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-text: #0f172a;
-  --color-muted: #64748b;
-  --color-accent: #3b82f6;
-  --color-success: #22c55e;
-  --color-warning: #eab308;
-  --color-danger: #ef4444;
-  --radius: 0.5rem;
-  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-}
-
-* {
-  box-sizing: border-box;
+  /* Legacy aliases — keep older components working without rewriting
+     every template. New code should use the --cl-* tokens directly. */
+  --color-bg: var(--cl-bg);
+  --color-surface: var(--cl-bg-2);
+  --color-border: var(--cl-stroke);
+  --color-text: var(--cl-text);
+  --color-muted: var(--cl-muted);
+  --color-accent: var(--cl-accent);
+  --color-success: var(--cl-good);
+  --color-warning: var(--cl-accent-warm);
+  --color-danger: var(--cl-critical);
+  --radius: var(--cl-radius-sm);
+  --shadow: var(--cl-shadow-sm);
+  --mono: var(--cl-font-mono);
 }
 
 body {
-  margin: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
-  min-height: 100vh;
+  background:
+    radial-gradient(900px 500px at 18% -10%, rgba(56, 189, 248, 0.10), transparent 60%),
+    radial-gradient(800px 450px at 92% 8%, rgba(45, 212, 191, 0.08), transparent 60%),
+    var(--cl-bg);
 }
 
-a {
-  color: var(--color-accent);
-  text-decoration: none;
+/* Light theme override — the user's dark-mode toggle flips this. */
+body[data-theme="light"] {
+  --cl-bg: #f4f7fa;
+  --cl-bg-2: #ffffff;
+  --cl-panel: rgba(255, 255, 255, 0.92);
+  --cl-panel-strong: #ffffff;
+  --cl-stroke: rgba(15, 23, 42, 0.10);
+  --cl-stroke-strong: rgba(15, 23, 42, 0.18);
+  --cl-text: #0f172a;
+  --cl-muted: #475569;
+  --cl-dim: #94a3b8;
+  background:
+    radial-gradient(900px 500px at 18% -10%, rgba(45, 212, 191, 0.12), transparent 60%),
+    radial-gradient(800px 450px at 92% 8%, rgba(56, 189, 248, 0.10), transparent 60%),
+    var(--cl-bg);
 }
 
+/* ── Form controls ─────────────────────────────────────── */
 button {
   cursor: pointer;
-  background: var(--color-accent);
-  color: white;
+  background: linear-gradient(120deg, var(--cl-accent), var(--cl-accent-2));
+  color: #02151b;
   border: 0;
-  padding: 0.45rem 0.9rem;
-  border-radius: var(--radius);
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--cl-radius-sm);
+  font: inherit;
+  font-weight: 600;
   font-size: 0.875rem;
+  transition: transform 0.12s var(--cl-ease), opacity 0.12s var(--cl-ease);
 }
+button:hover { opacity: 0.9; transform: translateY(-1px); }
+button:active { transform: translateY(0); }
+button[disabled] { opacity: 0.45; cursor: not-allowed; transform: none; }
 
 button.ghost {
   background: transparent;
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
+  color: var(--cl-text);
+  border: 1px solid var(--cl-stroke-strong);
 }
+button.ghost:hover { background: rgba(157, 197, 220, 0.08); transform: none; }
 
 button.danger {
-  background: var(--color-danger);
+  background: var(--cl-critical);
+  color: #fff;
 }
+button.danger:hover { background: #dc2626; }
 
 input,
 select,
 textarea {
   font: inherit;
-  padding: 0.45rem 0.6rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface);
-  color: var(--color-text);
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--cl-stroke-strong);
+  border-radius: var(--cl-radius-sm);
+  background: var(--cl-bg-2);
+  color: var(--cl-text);
+  transition: border-color 0.12s var(--cl-ease), box-shadow 0.12s var(--cl-ease);
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--cl-accent);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.18);
+}
+input[type="color"] { padding: 2px; }
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--cl-accent);
+  width: 16px; height: 16px;
+  cursor: pointer;
 }
 
+/* ── Card / panel ─────────────────────────────────────── */
 .card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 1rem;
-  box-shadow: var(--shadow);
+  background: var(--cl-panel);
+  border: 1px solid var(--cl-stroke);
+  border-radius: var(--cl-radius);
+  padding: 1.1rem 1.25rem;
+  box-shadow: var(--cl-shadow-sm);
+  backdrop-filter: blur(8px);
 }
 
-.muted {
-  color: var(--color-muted);
-}
+.muted { color: var(--cl-muted); }
 
 .row {
   display: flex;
   gap: 0.75rem;
   align-items: center;
+  flex-wrap: wrap;
 }
-
 .stack {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
+/* ── Tables ───────────────────────────────────────────── */
 table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 0.9rem;
 }
-
-table th,
-table td {
-  padding: 0.5rem 0.75rem;
+table th {
+  font-family: var(--cl-font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cl-muted);
   text-align: left;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 0.875rem;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--cl-stroke-strong);
 }
+table td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--cl-stroke);
+  vertical-align: middle;
+}
+table tr:last-child td { border-bottom: 0; }
+table tr:hover td { background: rgba(157, 197, 220, 0.04); }
 
+/* ── Misc ─────────────────────────────────────────────── */
 .badge {
   display: inline-block;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  color: white;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--cl-radius-pill);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #02151b;
 }
-
 .error {
-  color: var(--color-danger);
+  color: var(--cl-critical);
   font-size: 0.875rem;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #0f172a;
-    --color-surface: #1e293b;
-    --color-border: #334155;
-    --color-text: #e2e8f0;
-    --color-muted: #94a3b8;
-    --color-accent: #60a5fa;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  }
-  button.ghost { color: var(--color-text); }
-  pre, code { background: #0b1220 !important; color: var(--color-text); }
+pre, code {
+  font-family: var(--cl-font-mono);
+}
+pre {
+  background: var(--cl-bg-2) !important;
+  color: var(--cl-text) !important;
+  border: 1px solid var(--cl-stroke);
+  border-radius: var(--cl-radius-sm);
+  padding: 0.75rem 0.95rem;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  overflow-x: auto;
+}
+details {
+  background: var(--cl-bg-2);
+  border: 1px solid var(--cl-stroke);
+  border-radius: var(--cl-radius-sm);
+  padding: 0.55rem 0.85rem;
+}
+details summary {
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
 }
 
-body[data-theme="light"] {
-  --color-bg: #f8fafc;
-  --color-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-text: #0f172a;
-  --color-muted: #64748b;
-  --color-accent: #3b82f6;
-  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+/* Headings inside the dashboard */
+h1 {
+  font-family: var(--cl-font-display);
+  font-weight: 700;
+  font-size: 1.65rem;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.1rem;
+  color: var(--cl-text);
+}
+h3 {
+  font-family: var(--cl-font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.6rem;
+  color: var(--cl-text);
 }
 
-body[data-theme="dark"] {
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-border: #334155;
-  --color-text: #e2e8f0;
-  --color-muted: #94a3b8;
-  --color-accent: #60a5fa;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-}
-
+/* ── First-run banner ─────────────────────────────────── */
 .first-run-banner {
-  background: var(--color-accent);
-  color: white;
-  padding: 0.6rem 1.25rem;
+  background: var(--cl-warn-bg);
+  border-bottom: 1px solid var(--cl-warn-border);
+  color: var(--cl-text);
+  padding: 0.7rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.875rem;
 }
-.first-run-banner a { color: white; text-decoration: underline; }
+.first-run-banner a { color: var(--cl-accent); }
+.first-run-banner button.ghost {
+  border-color: var(--cl-warn-border);
+  color: var(--cl-text);
+}

@@ -91,8 +91,24 @@ def main() -> None:
         tracker.flush()
         _shutdown_event.set()
 
-    run_tray(on_quit)
-    _shutdown_event.wait()
+    # When launched by the Electron wrapper, the Electron process owns the
+    # tray icon and window — running our pystray icon would mean two
+    # tray icons fighting over the user's attention. Skip it and just
+    # block on the shutdown signal (sent via SIGTERM from Electron).
+    if os.environ.get("TICKWISE_HEADLESS") == "1":
+        logger.info("Headless mode (TICKWISE_HEADLESS=1) — skipping tray icon")
+        import signal
+
+        def _stop(*_args: object) -> None:
+            on_quit()
+
+        signal.signal(signal.SIGINT, _stop)
+        if hasattr(signal, "SIGTERM"):
+            signal.signal(signal.SIGTERM, _stop)
+        _shutdown_event.wait()
+    else:
+        run_tray(on_quit)
+        _shutdown_event.wait()
     logger.info("Tickwise stopped")
 
 

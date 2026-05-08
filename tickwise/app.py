@@ -111,6 +111,26 @@ def create_app() -> FastAPI:
             "tracking": tracking,
         }
 
+    @app.post("/api/shutdown", tags=["meta"], status_code=202)
+    async def shutdown() -> dict[str, str]:
+        """Graceful shutdown trigger used by the Electron wrapper on quit.
+
+        Only accepts requests from localhost (FastAPI is bound to 127.0.0.1
+        already). Sends SIGINT to the current process — the signal handler
+        registered in __main__ flips the shutdown event and stops the
+        capture loop, classifier, pomodoro and tracker cleanly.
+        """
+        import os
+        import signal
+        import threading
+
+        def _stop() -> None:
+            time.sleep(0.05)  # let the response finish flushing
+            os.kill(os.getpid(), signal.SIGINT)
+
+        threading.Thread(target=_stop, daemon=True).start()
+        return {"status": "stopping"}
+
     _mount_static_dashboard(app)
     _mount_pwa(app)
     return app

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Tickwise</title>
+  <style>
+    :root {
+      --cl-bg: #08131d;
+      --cl-bg-2: #0c1d2a;
+      --cl-text: #e9f2f8;
+      --cl-muted: #9fb4c3;
+      --cl-accent: #2dd4bf;
+      --cl-accent-2: #38bdf8;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      background:
+        radial-gradient(900px 500px at 18% -10%, rgba(56, 189, 248, 0.18), transparent 60%),
+        radial-gradient(800px 450px at 92% 8%, rgba(45, 212, 191, 0.14), transparent 60%),
+        var(--cl-bg);
+      color: var(--cl-text);
+      font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      display: grid;
+      place-items: center;
+      height: 100vh;
+    }
+    .splash { text-align: center; }
+    .mark {
+      width: 72px; height: 72px; border-radius: 18px;
+      background: linear-gradient(135deg, var(--cl-accent), var(--cl-accent-2));
+      display: grid; place-items: center;
+      margin: 0 auto 1.25rem;
+      box-shadow: 0 14px 60px rgba(45, 212, 191, 0.35);
+      position: relative;
+    }
+    .mark::before, .mark::after {
+      content: "";
+      position: absolute;
+      background: #0c0f1c;
+      border-radius: 2px;
+    }
+    .mark::before { width: 4px; height: 22px; top: 12px; left: calc(50% - 2px); }
+    .mark::after  { width: 18px; height: 3px; top: calc(50% - 1.5px); left: 50%; }
+    .mark > span {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #0c0f1c;
+    }
+    h1 {
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      font-weight: 700; letter-spacing: -0.02em;
+      font-size: 1.6rem; margin: 0 0 0.4rem;
+    }
+    p { color: var(--cl-muted); margin: 0; font-size: 0.95rem; }
+
+    .pulse {
+      margin-top: 1.6rem;
+      width: 180px; height: 4px; border-radius: 999px;
+      background: rgba(157, 197, 220, 0.12);
+      overflow: hidden;
+      position: relative;
+    }
+    .pulse::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      width: 40%;
+      background: linear-gradient(90deg, transparent, var(--cl-accent), var(--cl-accent-2), transparent);
+      animation: slide 1.4s ease-in-out infinite;
+    }
+    @keyframes slide {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(450%); }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash">
+    <div class="mark"><span></span></div>
+    <h1>Tickwise</h1>
+    <p>Starting the local service…</p>
+    <div class="pulse"></div>
+  </div>
+</body>
+</html>

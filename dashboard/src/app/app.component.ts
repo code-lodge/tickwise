@@ -62,27 +62,46 @@ interface OnboardingState {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.75rem 1.25rem;
-        border-bottom: 1px solid var(--color-border);
-        background: var(--color-surface);
+        padding: 0.85rem 1.5rem;
+        border-bottom: 1px solid var(--cl-stroke);
+        background: rgba(8, 19, 29, 0.82);
+        backdrop-filter: saturate(140%) blur(14px);
         position: sticky;
         top: 0;
         z-index: 10;
       }
-      .brand { display: flex; gap: 0.5rem; align-items: center; }
-      .dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--color-muted); }
-      .dot.tracking { background: var(--color-success); }
+      body[data-theme="light"] .topbar { background: rgba(255, 255, 255, 0.85); }
+      .brand {
+        display: flex; gap: 0.6rem; align-items: center;
+        font-family: var(--cl-font-display);
+        font-weight: 700; letter-spacing: -0.01em;
+      }
+      .brand strong { font-size: 1.05rem; color: var(--cl-text); }
+      .brand .muted { font-size: 0.78rem; }
+      .dot {
+        width: 0.7rem; height: 0.7rem; border-radius: 50%;
+        background: var(--cl-muted);
+        transition: background 0.2s var(--cl-ease), box-shadow 0.2s var(--cl-ease);
+      }
+      .dot.tracking {
+        background: var(--cl-good);
+        box-shadow: 0 0 12px var(--cl-good);
+      }
+      .nav { display: flex; flex-wrap: wrap; gap: 0.15rem; }
       .nav a {
-        margin: 0 0.5rem;
-        padding: 0.4rem 0.6rem;
-        border-radius: 0.375rem;
-        color: var(--color-muted);
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+        color: var(--cl-muted);
+        font-size: 0.88rem;
+        text-decoration: none;
+        transition: color 0.12s var(--cl-ease), background 0.12s var(--cl-ease);
       }
+      .nav a:hover { color: var(--cl-text); background: rgba(157, 197, 220, 0.06); }
       .nav a.active {
-        color: var(--color-text);
-        background: rgba(59, 130, 246, 0.08);
+        color: var(--cl-accent);
+        background: rgba(45, 212, 191, 0.12);
       }
-      .page { max-width: 1200px; margin: 1.5rem auto; padding: 0 1.25rem; }
+      .page { max-width: 1200px; margin: 1.75rem auto 3rem; padding: 0 1.5rem; }
     `,
   ],
 })

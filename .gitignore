@@ -7,6 +7,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+!electron/build/
 eggs/
 .eggs/
 lib/
@@ -69,6 +70,11 @@ mobile/dist/
 # PyInstaller build cache + dist (built locally, shipped via release)
 build_pyinstaller/
 dist/
+
+# Electron build outputs
+electron/node_modules/
+electron/dist/
+dist-electron/
 
 # Built dashboard bundle (generated, copied into tickwise/static at build time)
 tickwise/static/

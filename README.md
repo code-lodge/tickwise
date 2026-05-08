@@ -30,6 +30,7 @@ Tickwise stays on your laptop. It watches the active window, asks the browser ex
 
 - 🎯 **Fuzzy keyword classifier** — `"Sceneryenzo"` matches `"scenery en zo"`, `"Scenery-Enzo"`, `"sceneryenzo.com"` and `"SCENERY ENZO"`. Spacing, punctuation and case are ignored. Multi-word keywords also win on partial matches.
 - 🖥️ **Tray-resident** — clock-face system tray icon shows tracking / paused / focus / break states. Right-click for Open Dashboard, Pause, Start Pomodoro, Quit.
+- 🪟 **Native desktop window** — Electron wrapper opens the dashboard in its own application window, not a browser tab. Single installer, single tray icon, single process tree.
 - 🔍 **Change-detection capture** — perceptual-hash diff means OCR runs only when the screen actually changes (~2-4 times/min, not 60).
 - 🖥️ **Multi-monitor** — captures every screen, classifies the focused one, hash-tracks the rest for instant classification on focus switch.
 - 💤 **Idle detection** — auto-pauses after a configurable idle threshold, resumes when input returns.
@@ -77,13 +78,32 @@ Copy-Item dashboard\dist\tickwise-dashboard\browser\* tickwise\static -Recurse -
 
 Dev workflow: run `python -m tickwise` for the backend, then `cd dashboard && ng serve --proxy-config proxy.conf.json` for hot-reload at <http://localhost:4200>.
 
-### Build the .exe
+### Build the .exe (PyInstaller — service binary)
 
 ```powershell
 .\.venv\Scripts\pip install pyinstaller
 .\.venv\Scripts\python.exe -m PyInstaller packaging\tickwise.spec --clean --noconfirm
-# → dist\Tickwise\Tickwise.exe
+# → dist\Tickwise\Tickwise.exe   (tray app + bundled dashboard)
 ```
+
+### Build the desktop installer (Electron wrapper)
+
+The Electron wrapper opens the dashboard in a native window instead of a
+browser tab and bundles the PyInstaller backend inside its installer.
+
+```powershell
+# 1. Build the Python backend (above)
+# 2. Generate icons (only needed once, or after brand changes)
+.\.venv\Scripts\python.exe packaging\generate_icons.py
+
+# 3. Bundle the Electron app
+cd electron
+npm install
+npm run build:win   # → dist-electron\Tickwise-Setup-1.0.0.exe + portable .exe
+```
+
+See [electron/README.md](electron/README.md) for cross-platform builds
+and how the wrapper talks to the backend.
 
 ---
 

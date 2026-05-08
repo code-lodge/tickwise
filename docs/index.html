@@ -41,59 +41,58 @@
     .trust-strip strong { color: var(--cl-text); font-weight: 600; }
     .trust-strip .sep { margin: 0 0.5rem; color: var(--cl-dim); }
 
-    /* Mock dashboard */
-    .demo-frame {
-      max-width: 1080px; margin: 0 auto;
+    /* Real screenshots in a browser frame */
+    .shot-frame {
+      max-width: 1100px; margin: 0 auto;
       border: 1px solid var(--cl-stroke-strong);
       border-radius: var(--cl-radius);
       background: var(--cl-bg-2);
       box-shadow: var(--cl-shadow-lg);
       overflow: hidden;
     }
-    .demo-titlebar {
+    .shot-titlebar {
       display: flex; align-items: center; gap: 0.5rem;
       padding: 0.7rem 1rem;
       background: var(--cl-panel);
       border-bottom: 1px solid var(--cl-stroke);
     }
-    .demo-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--cl-stroke-strong); }
-    .demo-dot.r { background: var(--cl-critical); }
-    .demo-dot.y { background: var(--cl-accent-warm); }
-    .demo-dot.g { background: var(--cl-good); }
-    .demo-url {
+    .shot-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--cl-stroke-strong); }
+    .shot-dot.r { background: var(--cl-critical); }
+    .shot-dot.y { background: var(--cl-accent-warm); }
+    .shot-dot.g { background: var(--cl-good); }
+    .shot-url {
       flex: 1; text-align: center; font-size: 0.8rem;
       color: var(--cl-dim); font-family: var(--cl-font-mono);
     }
-    .demo-body { display: grid; grid-template-columns: 220px 1fr; min-height: 380px; }
-    .demo-side {
-      border-right: 1px solid var(--cl-stroke);
-      padding: 1.1rem 0.85rem;
-      background: var(--cl-panel);
+    .shot-frame img { display: block; width: 100%; height: auto; }
+
+    /* Tabbed gallery */
+    .gallery {
+      max-width: 1100px; margin: 0 auto;
     }
-    .demo-side .row {
-      padding: 0.45rem 0.7rem; border-radius: 6px;
-      font-size: 0.85rem; color: var(--cl-muted); margin-bottom: 2px;
+    .gallery-tabs {
+      display: flex; gap: 0.4rem; flex-wrap: wrap;
+      justify-content: center; margin-bottom: 1.25rem;
     }
-    .demo-side .row.active { background: rgba(45, 212, 191, 0.12); color: var(--cl-text); }
-    .demo-main { padding: 1.7rem 1.9rem; }
-    .demo-main h3 {
+    .gallery-tabs button {
+      background: transparent;
+      border: 1px solid var(--cl-stroke-strong);
+      color: var(--cl-muted);
       font-family: var(--cl-font-display);
-      font-size: 0.78rem; font-weight: 700;
-      letter-spacing: 0.16em; color: var(--cl-muted);
-      margin: 0 0 0.9rem;
+      font-size: 0.85rem;
+      padding: 0.45rem 1rem;
+      border-radius: var(--cl-radius-pill);
+      cursor: pointer;
+      transition: all 0.15s var(--cl-ease);
     }
-    .demo-row {
-      display: flex; align-items: center; gap: 0.9rem;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid var(--cl-stroke);
-      font-size: 0.92rem;
+    .gallery-tabs button:hover { color: var(--cl-text); border-color: var(--cl-muted); }
+    .gallery-tabs button.active {
+      background: linear-gradient(120deg, var(--cl-accent), var(--cl-accent-2));
+      color: #02151b; border-color: transparent;
     }
-    .demo-row:last-child { border: 0; }
-    .demo-color { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
-    .demo-name { flex: 1; }
-    .demo-bar { width: 200px; height: 6px; background: var(--cl-stroke); border-radius: 3px; overflow: hidden; }
-    .demo-bar-fill { height: 100%; background: linear-gradient(90deg, var(--cl-accent), var(--cl-accent-2)); }
-    .demo-time { font-variant-numeric: tabular-nums; color: var(--cl-muted); width: 60px; text-align: right; font-family: var(--cl-font-mono); font-size: 0.84rem; }
+    .gallery-shots { position: relative; }
+    .gallery-shots .shot-frame { display: none; }
+    .gallery-shots .shot-frame.active { display: block; }
 
     /* Features grid */
     .features-grid {
@@ -208,59 +207,76 @@
   </p>
 </section>
 
-<!-- ── DEMO ──────────────────────────────────────────── -->
+<!-- ── SCREENSHOT GALLERY ───────────────────────────── -->
 <div class="cl-shell" style="padding-bottom: 5rem;">
-  <div class="demo-frame">
-    <div class="demo-titlebar">
-      <span class="demo-dot r"></span>
-      <span class="demo-dot y"></span>
-      <span class="demo-dot g"></span>
-      <span class="demo-url">127.0.0.1:19532 / projects</span>
+  <div class="gallery">
+    <div class="gallery-tabs" role="tablist" aria-label="Dashboard pages">
+      <button class="active" data-shot="live" role="tab" aria-selected="true">Live</button>
+      <button data-shot="projects" role="tab" aria-selected="false">Projects</button>
+      <button data-shot="timeline" role="tab" aria-selected="false">Timeline</button>
+      <button data-shot="pomodoro" role="tab" aria-selected="false">Pomodoro</button>
+      <button data-shot="privacy" role="tab" aria-selected="false">Privacy</button>
     </div>
-    <div class="demo-body">
-      <aside class="demo-side">
-        <div class="row">Live</div>
-        <div class="row">Timeline</div>
-        <div class="row active">Projects</div>
-        <div class="row">Calendar</div>
-        <div class="row">Reports</div>
-        <div class="row">Clients</div>
-        <div class="row">Invoices</div>
-        <div class="row">Pomodoro</div>
-        <div class="row">Mobile</div>
-        <div class="row">Privacy</div>
-        <div class="row">Settings</div>
-      </aside>
-      <section class="demo-main">
-        <h3>TODAY · 6h 12m TRACKED</h3>
-        <div class="demo-row">
-          <div class="demo-color" style="background: var(--cl-accent-2)"></div>
-          <div class="demo-name">Sceneryenzo website</div>
-          <div class="demo-bar"><div class="demo-bar-fill" style="width:78%"></div></div>
-          <div class="demo-time">3h 22m</div>
+    <div class="gallery-shots">
+      <figure class="shot-frame active" data-shot="live">
+        <div class="shot-titlebar">
+          <span class="shot-dot r"></span><span class="shot-dot y"></span><span class="shot-dot g"></span>
+          <span class="shot-url">127.0.0.1:19532 / live</span>
         </div>
-        <div class="demo-row">
-          <div class="demo-color" style="background: var(--cl-accent)"></div>
-          <div class="demo-name">Acme client docs</div>
-          <div class="demo-bar"><div class="demo-bar-fill" style="width:42%"></div></div>
-          <div class="demo-time">1h 47m</div>
+        <img src="assets/screenshots/01-live.png" alt="Live dashboard showing total tracked time, billable seconds, unclassified count and WebSocket status, with a per-project breakdown" loading="lazy" />
+      </figure>
+      <figure class="shot-frame" data-shot="projects">
+        <div class="shot-titlebar">
+          <span class="shot-dot r"></span><span class="shot-dot y"></span><span class="shot-dot g"></span>
+          <span class="shot-url">127.0.0.1:19532 / projects</span>
         </div>
-        <div class="demo-row">
-          <div class="demo-color" style="background: var(--cl-violet)"></div>
-          <div class="demo-name">Internal R&amp;D</div>
-          <div class="demo-bar"><div class="demo-bar-fill" style="width:24%"></div></div>
-          <div class="demo-time">38m</div>
+        <img src="assets/screenshots/02-projects.png" alt="Projects page with the new-project form and a table listing existing projects, their match keywords, hourly rate, tracked time, archive and delete actions" loading="lazy" />
+      </figure>
+      <figure class="shot-frame" data-shot="timeline">
+        <div class="shot-titlebar">
+          <span class="shot-dot r"></span><span class="shot-dot y"></span><span class="shot-dot g"></span>
+          <span class="shot-url">127.0.0.1:19532 / timeline</span>
         </div>
-        <div class="demo-row">
-          <div class="demo-color" style="background: var(--cl-dim)"></div>
-          <div class="demo-name" style="color: var(--cl-dim)">Unassigned</div>
-          <div class="demo-bar"><div class="demo-bar-fill" style="width:8%; background: var(--cl-dim)"></div></div>
-          <div class="demo-time">25m</div>
+        <img src="assets/screenshots/03-timeline.png" alt="Timeline page listing recent sessions with start time, duration, project assignment, window title, and split or delete actions" loading="lazy" />
+      </figure>
+      <figure class="shot-frame" data-shot="pomodoro">
+        <div class="shot-titlebar">
+          <span class="shot-dot r"></span><span class="shot-dot y"></span><span class="shot-dot g"></span>
+          <span class="shot-url">127.0.0.1:19532 / pomodoro</span>
         </div>
-      </section>
+        <img src="assets/screenshots/04-pomodoro.png" alt="Pomodoro page with a large countdown, idle status pill, focus and break controls, settings panel and a history table of recent sessions" loading="lazy" />
+      </figure>
+      <figure class="shot-frame" data-shot="privacy">
+        <div class="shot-titlebar">
+          <span class="shot-dot r"></span><span class="shot-dot y"></span><span class="shot-dot g"></span>
+          <span class="shot-url">127.0.0.1:19532 / privacy</span>
+        </div>
+        <img src="assets/screenshots/05-privacy.png" alt="Privacy page with privacy-level radio buttons, a redaction preview text area, and a custom-rules table for client-specific patterns" loading="lazy" />
+      </figure>
     </div>
   </div>
 </div>
+
+<script>
+  // Tabbed gallery — switch which screenshot is visible.
+  (function () {
+    const tabs = document.querySelectorAll(".gallery-tabs button");
+    const shots = document.querySelectorAll(".gallery-shots .shot-frame");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const target = tab.dataset.shot;
+        tabs.forEach((t) => {
+          const on = t === tab;
+          t.classList.toggle("active", on);
+          t.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        shots.forEach((shot) => {
+          shot.classList.toggle("active", shot.dataset.shot === target);
+        });
+      });
+    });
+  })();
+</script>
 
 <!-- ── FEATURES ──────────────────────────────────────── -->
 <section id="features" class="cl-section cl-shell">
