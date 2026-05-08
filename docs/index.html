@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tickwise — Privacy-first automatic time tracking</title>
+  <meta name="description" content="Automatic time tracking for freelancers that runs entirely on your machine. No cloud, no API keys, no subscription. Classifies work by matching project keywords against window titles, browser URLs, and on-screen text." />
+  <meta name="theme-color" content="#08131d" />
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Tickwise — Privacy-first automatic time tracking" />
+  <meta property="og:description" content="Automatic time tracking for freelancers that runs entirely on your machine. No cloud, no API keys, no subscription." />
+  <meta property="og:image" content="assets/banner.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/design-system.css" />
+  <style>
+    /* ── Page-specific composition on top of design system ── */
+    body {
+      background:
+        radial-gradient(1100px 600px at 18% -10%, rgba(56, 189, 248, 0.18), transparent 60%),
+        radial-gradient(900px 500px at 92% 10%, rgba(45, 212, 191, 0.14), transparent 60%),
+        var(--cl-bg);
+    }
+
+    /* Hero */
+    .hero { padding: 5.5rem 0 3rem; text-align: center; }
+    .hero h1 { font-size: clamp(2.6rem, 6.5vw, 4.5rem); margin-bottom: 1rem; }
+    .hero .subtitle {
+      color: var(--cl-muted);
+      max-width: 640px; margin: 0 auto 1.6rem;
+      font-size: 1.1rem;
+    }
+    .hero-ctas { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 0.8rem; }
+    .trust-strip { font-size: 0.85rem; color: var(--cl-muted); }
+    .trust-strip strong { color: var(--cl-text); font-weight: 600; }
+    .trust-strip .sep { margin: 0 0.5rem; color: var(--cl-dim); }
+
+    /* Mock dashboard */
+    .demo-frame {
+      max-width: 1080px; margin: 0 auto;
+      border: 1px solid var(--cl-stroke-strong);
+      border-radius: var(--cl-radius);
+      background: var(--cl-bg-2);
+      box-shadow: var(--cl-shadow-lg);
+      overflow: hidden;
+    }
+    .demo-titlebar {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1rem;
+      background: var(--cl-panel);
+      border-bottom: 1px solid var(--cl-stroke);
+    }
+    .demo-dot { width: 11px; height: 11px; border-radius: 50%; background: var(--cl-stroke-strong); }
+    .demo-dot.r { background: var(--cl-critical); }
+    .demo-dot.y { background: var(--cl-accent-warm); }
+    .demo-dot.g { background: var(--cl-good); }
+    .demo-url {
+      flex: 1; text-align: center; font-size: 0.8rem;
+      color: var(--cl-dim); font-family: var(--cl-font-mono);
+    }
+    .demo-body { display: grid; grid-template-columns: 220px 1fr; min-height: 380px; }
+    .demo-side {
+      border-right: 1px solid var(--cl-stroke);
+      padding: 1.1rem 0.85rem;
+      background: var(--cl-panel);
+    }
+    .demo-side .row {
+      padding: 0.45rem 0.7rem; border-radius: 6px;
+      font-size: 0.85rem; color: var(--cl-muted); margin-bottom: 2px;
+    }
+    .demo-side .row.active { background: rgba(45, 212, 191, 0.12); color: var(--cl-text); }
+    .demo-main { padding: 1.7rem 1.9rem; }
+    .demo-main h3 {
+      font-family: var(--cl-font-display);
+      font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.16em; color: var(--cl-muted);
+      margin: 0 0 0.9rem;
+    }
+    .demo-row {
+      display: flex; align-items: center; gap: 0.9rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--cl-stroke);
+      font-size: 0.92rem;
+    }
+    .demo-row:last-child { border: 0; }
+    .demo-color { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+    .demo-name { flex: 1; }
+    .demo-bar { width: 200px; height: 6px; background: var(--cl-stroke); border-radius: 3px; overflow: hidden; }
+    .demo-bar-fill { height: 100%; background: linear-gradient(90deg, var(--cl-accent), var(--cl-accent-2)); }
+    .demo-time { font-variant-numeric: tabular-nums; color: var(--cl-muted); width: 60px; text-align: right; font-family: var(--cl-font-mono); font-size: 0.84rem; }
+
+    /* Features grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .feature-icon {
+      width: 38px; height: 38px;
+      border-radius: var(--cl-radius-sm);
+      background: linear-gradient(135deg, rgba(45,212,191,.18), rgba(56,189,248,.18));
+      display: grid; place-items: center;
+      font-size: 1.15rem; margin-bottom: 0.85rem;
+    }
+    .features-grid h3 { font-size: 1.05rem; margin-bottom: 0.35rem; }
+    .features-grid p { font-size: 0.92rem; color: var(--cl-muted); margin: 0; }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 0.85rem; max-width: 840px; margin: 0 auto; }
+    .step { display: flex; gap: 1.3rem; align-items: flex-start; }
+    .step-num {
+      flex-shrink: 0; width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cl-accent), var(--cl-accent-2));
+      color: #02151b; font-weight: 800; font-size: 0.95rem;
+      display: grid; place-items: center;
+      font-family: var(--cl-font-display);
+    }
+    .step h3 { margin: 0.3rem 0 0.3rem; font-size: 1.05rem; }
+    .step p { margin: 0; color: var(--cl-muted); font-size: 0.95rem; }
+
+    /* Keyword demo */
+    .kw-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; max-width: 920px; margin: 0 auto; }
+    .kw-card pre {
+      margin: 0; padding: 0.95rem 1.1rem;
+      background: var(--cl-bg-2); border-radius: var(--cl-radius-sm);
+      border: 1px solid var(--cl-stroke);
+      font-size: 0.85rem; line-height: 1.75;
+      color: var(--cl-text);
+    }
+    .kw-list { display: flex; flex-direction: column; gap: 0.55rem; }
+    .kw-row { display: flex; align-items: center; gap: 0.7rem; font-size: 0.85rem; }
+    .kw-row .haystack { color: var(--cl-text); font-family: var(--cl-font-mono); flex: 1; }
+    .verdict-good { background: var(--cl-good-bg); color: var(--cl-good); border: 1px solid var(--cl-good-border); padding: 2px 8px; border-radius: 4px; font-family: var(--cl-font-mono); font-size: 0.75rem; font-weight: 600; }
+    .verdict-bad { background: var(--cl-critical-bg); color: var(--cl-critical); border: 1px solid var(--cl-critical-border); padding: 2px 8px; border-radius: 4px; font-family: var(--cl-font-mono); font-size: 0.75rem; font-weight: 600; }
+
+    /* Download grid */
+    .download-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem; max-width: 880px; margin: 0 auto;
+    }
+    .platform { text-align: center; padding: 1.8rem 1.4rem; }
+    .platform-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .platform h3 { margin-bottom: 0.3rem; }
+    .platform p { color: var(--cl-muted); margin-bottom: 1rem; min-height: 2.6em; font-size: 0.92rem; }
+    .platform .cl-btn { width: 100%; justify-content: center; margin-bottom: 0.6rem; }
+
+    @media (max-width: 720px) {
+      .demo-body { grid-template-columns: 1fr; }
+      .demo-side { display: none; }
+      .kw-demo { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<a class="cl-skip-link" href="#main">Skip to content</a>
+
+<!-- ── NAV ───────────────────────────────────────────── -->
+<header class="cl-nav">
+  <div class="cl-shell cl-nav-inner">
+    <a class="cl-brand" href="#">
+      <span class="cl-brand-mark">T</span>
+      Tickwise
+    </a>
+    <nav class="cl-nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#download">Download</a>
+      <a class="cl-nav-cta" href="https://github.com/code-lodge/tickwise" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.42 7.42 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ── HERO ──────────────────────────────────────────── -->
+<section class="cl-shell hero">
+  <span class="cl-pill cl-pill-good"><span class="cl-pill-dot"></span> 100% LOCAL · NO LLM · NO API KEY</span>
+  <h1 style="margin-top:1.4rem">Time tracking that<br/><span class="cl-accent-text">stays on your laptop.</span></h1>
+  <p class="subtitle">
+    Tickwise watches the active window, asks your browser for the exact tab URL, and
+    classifies your work by matching project keywords against the combined text. No cloud,
+    no inference, no monthly bill — just a fast, deterministic tray app.
+  </p>
+  <div class="hero-ctas">
+    <a class="cl-btn cl-btn-primary" href="#download">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download for Windows
+    </a>
+    <a class="cl-btn cl-btn-secondary" href="https://github.com/code-lodge/tickwise" target="_blank" rel="noopener">View on GitHub</a>
+  </div>
+  <p class="trust-strip">
+    <strong>Free</strong><span class="sep">·</span>
+    <strong>Open source (GPL-3.0)</strong><span class="sep">·</span>
+    <strong>$0 / month</strong><span class="sep">·</span>
+    <strong>No data leaves your machine</strong>
+  </p>
+</section>
+
+<!-- ── DEMO ──────────────────────────────────────────── -->
+<div class="cl-shell" style="padding-bottom: 5rem;">
+  <div class="demo-frame">
+    <div class="demo-titlebar">
+      <span class="demo-dot r"></span>
+      <span class="demo-dot y"></span>
+      <span class="demo-dot g"></span>
+      <span class="demo-url">127.0.0.1:19532 / projects</span>
+    </div>
+    <div class="demo-body">
+      <aside class="demo-side">
+        <div class="row">Live</div>
+        <div class="row">Timeline</div>
+        <div class="row active">Projects</div>
+        <div class="row">Calendar</div>
+        <div class="row">Reports</div>
+        <div class="row">Clients</div>
+        <div class="row">Invoices</div>
+        <div class="row">Pomodoro</div>
+        <div class="row">Mobile</div>
+        <div class="row">Privacy</div>
+        <div class="row">Settings</div>
+      </aside>
+      <section class="demo-main">
+        <h3>TODAY · 6h 12m TRACKED</h3>
+        <div class="demo-row">
+          <div class="demo-color" style="background: var(--cl-accent-2)"></div>
+          <div class="demo-name">Sceneryenzo website</div>
+          <div class="demo-bar"><div class="demo-bar-fill" style="width:78%"></div></div>
+          <div class="demo-time">3h 22m</div>
+        </div>
+        <div class="demo-row">
+          <div class="demo-color" style="background: var(--cl-accent)"></div>
+          <div class="demo-name">Acme client docs</div>
+          <div class="demo-bar"><div class="demo-bar-fill" style="width:42%"></div></div>
+          <div class="demo-time">1h 47m</div>
+        </div>
+        <div class="demo-row">
+          <div class="demo-color" style="background: var(--cl-violet)"></div>
+          <div class="demo-name">Internal R&amp;D</div>
+          <div class="demo-bar"><div class="demo-bar-fill" style="width:24%"></div></div>
+          <div class="demo-time">38m</div>
+        </div>
+        <div class="demo-row">
+          <div class="demo-color" style="background: var(--cl-dim)"></div>
+          <div class="demo-name" style="color: var(--cl-dim)">Unassigned</div>
+          <div class="demo-bar"><div class="demo-bar-fill" style="width:8%; background: var(--cl-dim)"></div></div>
+          <div class="demo-time">25m</div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ── FEATURES ──────────────────────────────────────── -->
+<section id="features" class="cl-section cl-shell">
+  <div class="cl-section-header">
+    <span class="cl-section-label">Features</span>
+    <h2>Everything you need.<br/><span class="cl-accent-text">Nothing you don't.</span></h2>
+  </div>
+  <div class="features-grid">
+    <article class="cl-card">
+      <div class="feature-icon">🎯</div>
+      <h3>Fuzzy keyword classifier</h3>
+      <p><span class="cl-code-inline">Sceneryenzo</span> matches <span class="cl-code-inline">scenery en zo</span>, <span class="cl-code-inline">Scenery-Enzo</span>, <span class="cl-code-inline">SCENERY ENZO</span>. Spacing, case and punctuation are ignored.</p>
+    </article>
+    <article class="cl-card">
+      <div class="feature-icon">🖥️</div>
+      <h3>Tray-resident</h3>
+      <p>Clock-face tray icon shows tracking / paused / focus / break states. Right-click for everything else.</p>
+    </article>
+    <article class="cl-card">
+      <div class="feature-icon">🔍</div>
+      <h3>Change-detection capture</h3>
+      <p>Perceptual-hash diff means OCR runs only when the screen actually changes — about 2–4 times per minute, not 60.</p>
+    </article>
+    <article class="cl-card">
+      <div class="feature-icon">🌐</div>
+      <h3>Browser extension</h3>
+      <p>Chrome MV3 + Firefox bridge pushes the exact active tab URL to the local API over WebSocket. Domain blocklist included.</p>
+    </article>
+    <article class="cl-card">
+      <div class="feature-icon">🍅</div>
+      <h3>Pomodoro built in</h3>
+      <p>Focus / break state machine tags every session. Controls from the tray, dashboard, browser popup and your phone.</p>
+    </article>
+    <article class="cl-card">
+      <div class="feature-icon">🧾</div>
+      <h3>Invoicing &amp; reports</h3>
+      <p>Line-item-grouped PDFs from tracked time. Configurable HTML/CSS template. Dutch BTW/KVK/IBAN out of the box.</p>
+    </article>
+    <article class="cl-card">
+      <div class="feature-icon">📅</div>
+      <h3>Calendar sync</h3>
+      <p>ICS feed for Tuta, Apple Calendar and Google. CalDAV for Radicale and Nextcloud. OAuth2 for Google Calendar.</p>
+    </article>
+    <article class="cl-card">
+      <div class="feature-icon">📱</div>
+      <h3>Mobile companion</h3>
+      <p>Installable PWA for the timeline, today summary and remote Pomodoro. QR-code pairing, optional Cloudflare Tunnel.</p>
+    </article>
+    <article class="cl-card">
+      <div class="feature-icon">🔒</div>
+      <h3>4-level redaction</h3>
+      <p>Strips secrets, PII, names and structure from any text before it ever lands in the local SQLite database.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ──────────────────────────────────── -->
+<section id="how-it-works" class="cl-section cl-shell" style="padding-top: 0;">
+  <div class="cl-section-header">
+    <span class="cl-section-label">How it works</span>
+    <h2>Local. Deterministic.<br/><span class="cl-accent-text">Pay nothing.</span></h2>
+    <p class="cl-section-sub">No machine learning. No "API key required." Tickwise classifies your time with a single deterministic stage that you fully control.</p>
+  </div>
+  <div class="steps">
+    <article class="step cl-card">
+      <div class="step-num">1</div>
+      <div>
+        <h3>Capture</h3>
+        <p>Once a second, Tickwise samples the active window and the focused screen. A perceptual hash decides whether anything has actually changed — if it hasn't, the loop sleeps. OCR only runs on real change.</p>
+      </div>
+    </article>
+    <article class="step cl-card">
+      <div class="step-num">2</div>
+      <div>
+        <h3>Combine</h3>
+        <p>The window title, process name and OCR text are joined with the browser extension's exact tab URL and title. That's the haystack the matcher will search.</p>
+      </div>
+    </article>
+    <article class="step cl-card">
+      <div class="step-num">3</div>
+      <div>
+        <h3>Match</h3>
+        <p>Every active project's keyword list is normalised — lowercased, all non-alphanumerics stripped — and so is the haystack. A normalized substring match wins first; a token-set fallback handles partial matches.</p>
+      </div>
+    </article>
+    <article class="step cl-card">
+      <div class="step-num">4</div>
+      <div>
+        <h3>Store</h3>
+        <p>The matching project gets the activity. Confidence is <span class="cl-code-inline">1.0</span>, source is <span class="cl-code-inline">keyword_match</span>. Nothing leaves the machine. If no project matched, the activity stays <span class="cl-code-inline">unclassified</span> for you to assign by hand.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ── KEYWORD DEMO ──────────────────────────────────── -->
+<section class="cl-section cl-shell" style="padding-top: 0;">
+  <div class="cl-section-header">
+    <span class="cl-section-label">Live example</span>
+    <h2>Type one project name.<br/><span class="cl-accent-text">Every variation matches.</span></h2>
+  </div>
+  <div class="kw-demo">
+    <article class="cl-card kw-card">
+      <h3 style="font-size:0.78rem; letter-spacing:.16em; color: var(--cl-muted); text-transform: uppercase; font-family: var(--cl-font-display); margin-bottom: 0.85rem;">Project keywords</h3>
+      <pre>Sceneryenzo
+sceneryenzo.com
+SE-website</pre>
+      <p class="cl-muted" style="margin-top: 0.9rem; font-size: 0.88rem;">
+        Three lines. Each one is normalized to <span class="cl-code-inline">sceneryenzo</span>,
+        <span class="cl-code-inline">sceneryenzocom</span>, <span class="cl-code-inline">sewebsite</span>.
+      </p>
+    </article>
+    <article class="cl-card kw-card">
+      <h3 style="font-size:0.78rem; letter-spacing:.16em; color: var(--cl-muted); text-transform: uppercase; font-family: var(--cl-font-display); margin-bottom: 0.85rem;">Haystacks → match</h3>
+      <div class="kw-list">
+        <div class="kw-row"><span class="haystack">"sceneryenzo.com/dashboard"</span><span class="verdict-good">match</span></div>
+        <div class="kw-row"><span class="haystack">"scenery en zo - Microsoft Edge"</span><span class="verdict-good">match</span></div>
+        <div class="kw-row"><span class="haystack">"SCENERY-ENZO project board"</span><span class="verdict-good">match</span></div>
+        <div class="kw-row"><span class="haystack">"5 more pages — sceneryenzo"</span><span class="verdict-good">match</span></div>
+        <div class="kw-row"><span class="haystack">"random unrelated window"</span><span class="verdict-bad">no match</span></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ── DOWNLOAD ──────────────────────────────────────── -->
+<section id="download" class="cl-section cl-shell" style="padding-top: 0;">
+  <div class="cl-section-header">
+    <span class="cl-section-label">Download</span>
+    <h2>One file.<br/><span class="cl-accent-text">Double-click to run.</span></h2>
+    <p class="cl-section-sub">Tickwise ships as a self-contained tray app. No Python install required, no Node.js, no Docker. The dashboard is bundled inside the binary.</p>
+  </div>
+  <div class="download-grid">
+    <article class="cl-card platform">
+      <div class="platform-icon">🪟</div>
+      <h3>Windows</h3>
+      <p>Windows 10 / 11 · x64 · ~80 MB</p>
+      <a class="cl-btn cl-btn-primary" href="https://github.com/code-lodge/tickwise/releases/latest">Download .exe</a>
+      <span class="cl-pill cl-pill-good">AVAILABLE</span>
+    </article>
+    <article class="cl-card platform">
+      <div class="platform-icon">🍎</div>
+      <h3>macOS</h3>
+      <p>Universal binary · Apple Silicon + Intel</p>
+      <a class="cl-btn cl-btn-secondary" href="https://github.com/code-lodge/tickwise">Track progress</a>
+      <span class="cl-pill cl-pill-warn">COMING SOON</span>
+    </article>
+    <article class="cl-card platform">
+      <div class="platform-icon">🐧</div>
+      <h3>Linux</h3>
+      <p>AppImage · X11 + Wayland</p>
+      <a class="cl-btn cl-btn-secondary" href="https://github.com/code-lodge/tickwise">Track progress</a>
+      <span class="cl-pill cl-pill-warn">COMING SOON</span>
+    </article>
+  </div>
+</section>
+
+<!-- ── BUILD FROM SOURCE ─────────────────────────────── -->
+<section class="cl-section cl-shell" style="padding-top: 0;">
+  <div class="cl-section-header">
+    <span class="cl-section-label">Build from source</span>
+    <h2>Or run it from a checkout.</h2>
+    <p class="cl-section-sub">Python 3.12+ and Node.js 20+ is all you need. The build is reproducible and there's no external service to register with.</p>
+  </div>
+  <div class="cl-codeblock" style="max-width: 880px; margin: 0 auto;">
+    <div class="cl-codeblock-head">
+      <span>powershell</span>
+      <span style="color: var(--cl-good)">~/Projects ❯</span>
+    </div>
+<pre><span class="c"># Clone, install editable, build the dashboard, run the tray app</span>
+<span class="k">git</span> clone https://github.com/code-lodge/tickwise
+<span class="k">cd</span> tickwise
+
+python -m venv .venv
+.\.venv\Scripts\pip install -e .
+
+Push-Location dashboard ; npm install ; .\node_modules\.bin\ng build ; Pop-Location
+Copy-Item dashboard\dist\tickwise-dashboard\browser\* tickwise\static -Recurse -Force
+
+.\.venv\Scripts\pythonw.exe -m tickwise   <span class="c"># tray icon appears, dashboard at :19532</span>
+
+<span class="c"># Build a standalone Tickwise.exe</span>
+.\.venv\Scripts\pip install pyinstaller
+.\.venv\Scripts\python.exe -m PyInstaller packaging\tickwise.spec --clean --noconfirm
+<span class="c"># → dist\Tickwise\Tickwise.exe</span></pre>
+  </div>
+</section>
+
+</main>
+
+<!-- ── FOOTER ────────────────────────────────────────── -->
+<footer class="cl-footer">
+  <div class="cl-shell">
+    <div>
+      <a href="https://github.com/code-lodge/tickwise">GitHub</a>
+      <span class="cl-sep">·</span>
+      <a href="https://github.com/code-lodge/tickwise/releases/latest">Releases</a>
+      <span class="cl-sep">·</span>
+      <a href="https://github.com/code-lodge/tickwise/issues">Issues</a>
+      <span class="cl-sep">·</span>
+      <a href="https://github.com/code-lodge/tickwise/blob/main/LICENSE">GPL-3.0</a>
+    </div>
+    <div class="cl-made">
+      Made with care by <a href="https://github.com/hylkehellinga">Hylke Hellinga</a> · © Code Lodge
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

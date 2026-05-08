@@ -1,443 +1,302 @@
-# Tickwise
+<div align="center">
 
-**Automatic time tracking for freelancers, powered by LLM classification.**
+<img src="docs/assets/banner.svg" alt="Tickwise — privacy-first time tracking for freelancers" width="100%" />
 
-Tickwise passively observes your screen, uses Claude or OpenAI to classify what you're working on, and generates billing reports and invoices — without you ever pressing a start/stop button.
+<br />
 
-It runs as a system tray app on Windows, macOS, and Linux. All data stays local. A configurable redaction engine strips sensitive content before anything leaves your machine.
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-2dd4bf?style=flat-square)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/code-lodge/tickwise?style=flat-square&color=38bdf8)](https://github.com/code-lodge/tickwise/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/code-lodge/tickwise/release.yml?style=flat-square&label=build)](https://github.com/code-lodge/tickwise/actions)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows-0078D4?style=flat-square&logo=windows&logoColor=white)](https://github.com/code-lodge/tickwise/releases/latest)
+[![100% local](https://img.shields.io/badge/runs-100%25%20local-22c55e?style=flat-square)](#why-tickwise)
+
+**Privacy-first automatic time tracking for freelancers — runs entirely on your machine. No cloud, no API keys, no subscription. Classifies your work by matching project keywords against window titles, browser URLs, and on-screen text.**
+
+[Website](https://tickwise.app) · [Download](https://github.com/code-lodge/tickwise/releases/latest) · [Browser extension](#-browser-extension) · [Configuration](#%EF%B8%8F-configuration) · [Contributing](#-contributing)
+
+</div>
 
 ---
 
-## Why Tickwise?
+## Why Tickwise
 
-Manual time tracking is broken. You forget to start the timer, you forget to stop it, you forget which project you were on. At the end of the month you're guessing at hours and eating unbilled time.
+Manual time tracking is broken. You forget to start the timer, you forget to stop it, you forget which project you were on, and at the end of the month you guess at hours and eat unbilled time.
 
-Tickwise fixes this by watching what's on your screen — your IDE, browser, terminal, email — and letting an LLM figure out which project and task category each window belongs to. You get accurate, granular time data without changing how you work.
+Most "automatic" alternatives fix that by uploading your screen to a cloud service or sending your activity to an LLM. That's a non-starter for anyone working under NDA, on client systems, or simply allergic to handing every keystroke of context to a third party.
 
-**It's not a keylogger.** Tickwise captures screenshots for OCR text extraction (never saved to disk), counts input events for idle detection (never records keystrokes), and redacts sensitive content before sending anything to the LLM API.
-
----
+Tickwise stays on your laptop. It watches the active window, asks the browser extension for the exact tab URL, runs OCR on the screen if you want richer signal, and decides which project the activity belongs to by **matching the project's keywords against that combined text**. No network, no inference, no cost — just a fast deterministic match. The dashboard, the database, the classifier, and the matching logic all live inside a single ~80 MB binary that you double-click.
 
 ## Features
 
-**Core Tracking**
+- 🎯 **Fuzzy keyword classifier** — `"Sceneryenzo"` matches `"scenery en zo"`, `"Scenery-Enzo"`, `"sceneryenzo.com"` and `"SCENERY ENZO"`. Spacing, punctuation and case are ignored. Multi-word keywords also win on partial matches.
+- 🖥️ **Tray-resident** — clock-face system tray icon shows tracking / paused / focus / break states. Right-click for Open Dashboard, Pause, Start Pomodoro, Quit.
+- 🔍 **Change-detection capture** — perceptual-hash diff means OCR runs only when the screen actually changes (~2-4 times/min, not 60).
+- 🖥️ **Multi-monitor** — captures every screen, classifies the focused one, hash-tracks the rest for instant classification on focus switch.
+- 💤 **Idle detection** — auto-pauses after a configurable idle threshold, resumes when input returns.
+- 🌐 **Browser extension** — Chrome MV3 + Firefox bridge that pushes the *exact* tab URL and title to the local API over WebSocket. Domain blocklist for banking, personal email, etc.
+- 🍅 **Pomodoro** — built-in focus/break state machine. Tags every captured session with the active period. Controls from tray menu, dashboard, browser popup and mobile.
+- 📅 **Calendar sync** — ICS feed (Tuta, Google, Apple), CalDAV (Radicale, Nextcloud), Google Calendar OAuth2.
+- 🧾 **Invoicing** — line-item-grouped PDFs from tracked time, configurable HTML/CSS template, Dutch BTW/KVK/IBAN out of the box.
+- 📊 **Dashboard** — live view, timeline (day/week/month), reports, project & client management, dark mode, keyboard shortcuts (Ctrl+P / Ctrl+,).
+- 📱 **Mobile PWA** — view today, start/stop Pomodoro, see the timeline from your phone. QR-code pairing, optional Cloudflare Tunnel for off-LAN access.
+- 🔒 **4-level redaction** — strips secrets / PII / names / structure before *any* text is written to disk.
+- 🔐 **Local-only API** — FastAPI bound to `127.0.0.1:19532`. Nothing leaves the machine unless you opt-in to Cloudflare Tunnel for the calendar feed or mobile pairing.
 
-- 1-second capture loop with perceptual hash change detection — OCR runs only when the screen actually changes (~2-4 times/minute instead of 60)
-- Multi-monitor support — captures all screens, classifies the focused one, hash-tracks the rest for instant classification on focus switch
-- Idle detection — automatically pauses when you step away, resumes when you're back
+## Quick Start
 
-**LLM Classification**
+### Download
 
-- Bring your own API key (Claude or OpenAI)
-- Automatic project + task classification with confidence scores
-- Classification cache reduces API costs (~$1-5/month at typical usage)
-- Monthly budget cap with notifications
-- Graceful fallback — tracking continues even without an API key, sessions just lack project assignment
+| Platform | Installer | Notes |
+| -------- | --------- | ----- |
+| Windows x64 | [Download Tickwise-Setup.exe →](https://github.com/code-lodge/tickwise/releases/latest) | Windows 10 / 11. Tray app + bundled dashboard |
+| macOS | _coming soon_ | Apple Silicon + Intel |
+| Linux | _coming soon_ | AppImage |
 
-**Privacy & Redaction**
+> **First-launch:** the binaries are not yet code-signed. Windows SmartScreen will warn — click *More info → Run anyway*.
 
-- 4 configurable privacy levels, from secrets-only (Level 1) to maximum redaction (Level 4)
-- Level 1: API keys, passwords, private keys, JWTs, connection strings
-- Level 2: Adds emails, phone numbers, IPs, IBANs, credit cards, file paths
-- Level 3: Adds person/org names, monetary amounts, chat content, shell commands
-- Level 4: Strips code blocks, all URLs, tabular data, quoted text — LLM sees structure only
-- Custom redaction patterns for client-specific terms
-- Redaction preview tool in the dashboard
-- Screenshots are never stored — held in memory, discarded after OCR
+Double-click to launch. The tray icon appears, the dashboard opens at <http://127.0.0.1:19532/>, and a fresh SQLite database is created at `%APPDATA%\Tickwise\tickwise.db` on first run.
 
-**Dashboard**
+### Build from source
 
-- Live view with real-time current activity
-- Timeline with day/week/month views — click to edit, split, merge sessions
-- Project management with color coding, hourly rates, client assignment
-- Reports: time summary, billing, activity breakdown, productivity
-- Export to PDF, CSV, JSON
+You will need Python 3.12+ and Node.js 20+.
 
-**Invoicing**
+```powershell
+git clone https://github.com/code-lodge/tickwise
+cd tickwise
 
-- Generate professional PDF invoices from tracked time
-- Line items auto-grouped by task category
-- Dutch tax support (BTW/KVK/IBAN) — easily adaptable to other jurisdictions
-- Invoice lifecycle: draft → sent → paid → overdue
-- Customizable HTML/CSS invoice template
-- Freelancer profile with logo upload
+python -m venv .venv
+.\.venv\Scripts\pip install -e .
 
-**Pomodoro Timer**
+# Build the dashboard once (Angular)
+Push-Location dashboard ; npm install ; .\node_modules\.bin\ng build ; Pop-Location
+Copy-Item dashboard\dist\tickwise-dashboard\browser\* tickwise\static -Recurse -Force
 
-- Integrated focus/break timer that tags tracked sessions
-- Configurable durations and auto-start behavior
-- Controls from tray menu, dashboard, browser extension, and mobile app
-- OS-native notifications
+# Run the tray app
+.\.venv\Scripts\pythonw.exe -m tickwise
+```
 
-**Calendar Sync**
+Dev workflow: run `python -m tickwise` for the backend, then `cd dashboard && ng serve --proxy-config proxy.conf.json` for hot-reload at <http://localhost:4200>.
 
-- ICS feed for Tuta Calendar and any URL-subscribing calendar
-- CalDAV sync (Radicale, Nextcloud, etc.)
-- Google Calendar via OAuth2
-- ICS file export
+### Build the .exe
 
-**Cloudflare Tunnel**
+```powershell
+.\.venv\Scripts\pip install pyinstaller
+.\.venv\Scripts\python.exe -m PyInstaller packaging\tickwise.spec --clean --noconfirm
+# → dist\Tickwise\Tickwise.exe
+```
 
-- Expose ICS feed and mobile API via stable custom domain (e.g. `time.yourdomain.com`)
-- No firewall ports to open — uses Cloudflare's infrastructure
-- 4-step setup wizard in the dashboard
-- Ingress restricted to calendar feed and mobile API only
+---
 
-**Browser Extension**
+## How classification works
 
-- Chrome (Manifest V3) and Firefox
-- Captures exact URL, page title, and content snippet for richer classification context
-- Domain blocklist for banking, personal email, etc.
-- Pomodoro controls in the popup
-- Communicates only with localhost — never sends data externally
+Tickwise has a single classifier — a deterministic keyword matcher that runs in two stages:
 
-**Mobile Companion**
+**Stage 1 — Normalized substring match.** Both the keyword and the haystack (window title + browser URL + tab title + OCR text) get lowercased and stripped of every non-alphanumeric character. So `"Scenery-Enzo Website!"` and `"scenery en zo"` both become `"sceneryenzo"`-prefixed strings, and a substring check finds them.
 
-- Progressive Web App — works in mobile browser, installable to home screen
-- View today's tracking, timeline, projects from your phone
-- Start/stop Pomodoro remotely
-- QR code pairing from the desktop dashboard
-- Push notifications for Pomodoro timer events
+**Stage 2 — Token-set fallback.** If the whole-keyword pass misses, the keyword is split into significant words (stop-words like `website`, `app`, `dashboard`, `the`, `and` are dropped). At least one token must appear in the normalized haystack. This is what makes a project named *"Sceneryenzo website"* still claim a tab whose only signal is `sceneryenzo`.
+
+When several projects could match, the project with the **highest score** wins (score = total characters of matched text, with a 2× bonus for whole-keyword matches). Ties are broken by project id (oldest wins, stable).
+
+You manage keywords directly on the **Projects** page — one keyword per line. New projects auto-populate with the project's name; you can add as many aliases as you want:
+
+```
+Sceneryenzo
+scenery enzo
+sceneryenzo.com
+scenery-enzo
+SE-website
+```
+
+If nothing matches, the activity is stored as `unclassified`. You can reassign it manually from the timeline at any time.
+
+---
+
+## 🌐 Browser extension
+
+Window titles in modern browsers are useless for time tracking — Edge will happily report "Tickwise and 5 more pages — Work — Microsoft Edge" while you're on `sceneryenzo.com`. The browser extension fixes that by pushing the *real* active-tab URL and title to the local Tickwise API over WebSocket.
+
+### Install
+
+**Chrome / Edge / Brave / Arc**
+
+1. Open `chrome://extensions/` (or `edge://extensions/`)
+2. Enable **Developer mode** (toggle, top-right)
+3. **Load unpacked** → select the `browser-extension/` folder
+
+**Firefox**
+
+1. Open `about:debugging` → *This Firefox*
+2. **Load Temporary Add-on** → select `browser-extension/manifest.firefox.json`
+
+The extension talks only to `127.0.0.1:19532` — nothing leaves the browser. A configurable domain blocklist (default: `mail.google.com`, `online.banking`) excludes sensitive sites entirely.
+
+---
+
+## ⚙️ Configuration
+
+Most settings live in the dashboard (**Settings** page) and are stored in the local SQLite database. Capture interval, idle thresholds, OCR downscaling, redaction levels, Pomodoro durations, dark mode — all editable in the UI, no config file to hand-edit.
+
+| Setting | Default | What it does |
+| ------- | ------- | ------------ |
+| `capture_interval_ms` | 1000 | How often the capture loop ticks |
+| `phash_change_threshold` | 5 | Hamming-distance threshold for OCR re-run |
+| `idle_merge_threshold` | 120 s | Idle gap that gets merged into the active session |
+| `idle_split_threshold` | 300 s | Idle gap that splits the session into two |
+| `min_session_duration` | 10 s | Sessions shorter than this are discarded |
+| `privacy_level` | 2 | 1 = secrets only, 2 = + PII, 3 = + names, 4 = strip structure |
+| `pomodoro_work_minutes` | 25 | Focus duration |
+| `pomodoro_short_break_minutes` | 5 | Short break duration |
+| `pomodoro_long_break_minutes` | 15 | Long break duration |
+| `pomodoro_cycles_before_long` | 4 | Focus cycles before a long break |
+| `dark_mode` | false | Dashboard theme |
+
+### Privacy levels
+
+| Level | Strips |
+| ----- | ------ |
+| **1 — Minimal** | API keys, passwords, private keys, JWTs, connection strings |
+| **2 — Standard** _(default)_ | + Emails, phone numbers, IPs, IBANs, credit cards, file paths |
+| **3 — Aggressive** | + Person/organisation names, monetary amounts, chat content, shell commands |
+| **4 — Maximum** | + Code blocks, all URLs, tabular data, quoted text |
+
+Custom redaction patterns let you blacklist client-specific terms (project codenames, internal domains, etc.). The dashboard has a live preview that shows what each level does to a sample of your text.
 
 ---
 
 ## Architecture
 
 ```
-┌───────────────────────────────────────────────────────────────────────┐
-│                   SYSTEM TRAY / MENU BAR                              │
-│  Icon + Context Menu: Dashboard / Pause / Pomodoro / Settings / Quit  │
-└──────────────────────────────┬────────────────────────────────────────┘
-                               │
-                               ▼
-┌───────────────────────────────────────────────────────────────────────┐
-│                    BACKGROUND SERVICE                                  │
-│                                                                        │
-│  Capture Loop → Change Detection → OCR → Redaction → LLM → Sessions  │
-│  (1s tick)       (phash + meta)    (CPU)  (4 levels)   (cloud)        │
-│                                                                        │
-│  + Pomodoro Timer (state machine, tags sessions)                      │
-└──────────────────────────────┬────────────────────────────────────────┘
-                               │ writes
-                               ▼
-┌───────────────────────────────────────────────────────────────────────┐
-│                         SQLite DATABASE                                │
-└──────────────────────────────┬────────────────────────────────────────┘
-                               │ reads
-                               ▼
-┌───────────────────────────────────────────────────────────────────────┐
-│                    LOCAL API SERVER (FastAPI)                           │
-│                    127.0.0.1:19532                                     │
-└──────────────────────────────┬────────────────────────────────────────┘
-                               │
-          ┌────────────────────┼────────────────────┐
-          ▼                    ▼                    ▼
-   Dashboard UI       Browser Extension     Mobile PWA
-   (Angular 19+)      (Chrome/Firefox)      (via Cloudflare Tunnel)
+┌─────────────────────────────────────────────────────────────────────────┐
+│  SYSTEM TRAY   (pystray)   — clock icon, status text, context menu      │
+└──────────────────────────────────┬──────────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  BACKGROUND SERVICE                                                      │
+│                                                                          │
+│  Capture loop  →  pHash diff  →  OCR (PaddleOCR)  →  Redaction          │
+│  (1 s tick)       (skip cost)    (CPU only)          (4 levels)         │
+│                                                                          │
+│             →  Keyword matcher  →  Session tracker                      │
+│                (deterministic)     (open / extend / close)              │
+│                                                                          │
+│  Pomodoro state machine  ·  Idle detector  ·  Browser-bridge WebSocket  │
+└──────────────────────────────────┬──────────────────────────────────────┘
+                                   │ writes
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  SQLite (WAL)  ·  %APPDATA%\Tickwise\tickwise.db                        │
+└──────────────────────────────────┬──────────────────────────────────────┘
+                                   │ reads
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  FastAPI  on  127.0.0.1:19532                                           │
+└──────────┬──────────────────────────────────┬───────────────────────────┘
+           ▼                                  ▼
+   Dashboard (Angular 19)         Browser extension (Chrome MV3 / Firefox)
+   Mobile PWA (via Cloudflare Tunnel, optional)
 ```
 
-Single process. Multiple threads. No containers, no cloud infrastructure, no accounts to create. Just a desktop app.
-
----
-
-## Tech Stack
-
-| Layer              | Technology                                                    |
-| ------------------ | ------------------------------------------------------------- |
-| Backend            | Python 3.12+, FastAPI, SQLite (WAL), PaddleOCR (CPU)          |
-| Desktop            | pystray, mss, imagehash, Pillow                               |
-| LLM                | httpx → Anthropic Messages API or OpenAI Chat Completions API |
-| Dashboard          | Angular 19+ (standalone components, signals)                  |
-| Browser Extension  | Chrome Manifest V3, Firefox WebExtensions                     |
-| Mobile             | Angular PWA                                                   |
-| Invoices & Reports | weasyprint (HTML/CSS → PDF)                                   |
-| Calendar           | icalendar (RFC 5545), caldav (RFC 4791)                       |
-| Tunnel             | Cloudflare Tunnel (cloudflared subprocess)                    |
-| Packaging          | PyInstaller + NSIS (Win) / DMG (Mac) / AppImage (Linux)       |
-
----
-
-## Quick Start (Development)
-
-### Prerequisites
-
-- Python 3.12+
-- Node.js 20+ and npm
-- Git
-
-### Backend
-
-```bash
-git clone https://github.com/youruser/tickwise.git
-cd tickwise
-
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-
-python -m tickwise
-```
-
-The system tray icon appears. The API starts on `http://localhost:19532`. On first run the database is created automatically.
-
-### Dashboard
-
-```bash
-cd dashboard
-npm install
-ng serve --proxy-config proxy.conf.json
-```
-
-Open `http://localhost:4200`. The proxy forwards API calls to the backend.
-
-### Browser Extension
-
-```bash
-cd browser-extension
-```
-
-Chrome: go to `chrome://extensions` → Enable developer mode → Load unpacked → select the `browser-extension/` folder.
-
-Firefox: go to `about:debugging` → This Firefox → Load Temporary Add-on → select `manifest.firefox.json`.
-
-### Mobile PWA
-
-```bash
-cd mobile
-npm install
-ng serve --port 4300
-```
-
-The PWA requires HTTPS for push notifications — enable the Cloudflare Tunnel for mobile access over the internet.
-
----
-
-## Configuration
-
-### LLM Setup
-
-1. Open the dashboard → Privacy & LLM
-2. Select provider (Claude or OpenAI)
-3. Enter your API key
-4. Click "Test" to verify
-5. Optionally set a monthly budget cap
-
-Tickwise works without an LLM key — it will track your time but mark sessions as "unclassified" until you configure one.
-
-### Privacy Levels
-
-| Level                  | What's Redacted                                    | Classification Accuracy |
-| ---------------------- | -------------------------------------------------- | ----------------------- |
-| 1 — Minimal            | Secrets only (API keys, passwords, private keys)   | Highest                 |
-| 2 — Standard (default) | + PII (emails, phones, IPs, credit cards, paths)   | High                    |
-| 3 — Aggressive         | + Names, orgs, amounts, chat content, commands     | Medium                  |
-| 4 — Maximum            | + Code blocks, all URLs, tabular data, quoted text | Lower                   |
-
-You can add custom redaction patterns for client-specific terms (e.g. client names, project codenames, internal domains).
-
-### Calendar Sync (Tuta)
-
-1. Enable ICS Feed in the dashboard
-2. Set up Cloudflare Tunnel for a stable URL
-3. Copy the feed URL: `https://time.yourdomain.com/api/calendar/feed/{token}.ics`
-4. In Tuta Calendar → "+" → "from URL" → paste
-
----
-
-## Project Documentation
-
-This project is built from a four-document specification:
-
-| Document                                                         | Description                                                                                       |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| [`docs/specification.md`](docs/specification.md)                 | Complete build specification — architecture, database schema, API endpoints, all features         |
-| [`docs/implementation-phases.md`](docs/implementation-phases.md) | 12 implementation phases with dependencies, acceptance criteria, and QA matrix                    |
-| [`AGENTS.md`](AGENTS.md)                                         | Engineering workflow for AI coding agents — testing, commits, quality standards, ontology mapping |
-| [`docs/engineering-ontology.md`](docs/engineering-ontology.md)   | Global Software Engineering Standards Ontology v3.0 — canonical reference for all standards used  |
-
-If you're contributing or using an AI coding agent to build this, start with `AGENTS.md`.
-
----
-
-## Project Structure
+Single process. Multiple threads. No containers, no cloud, no accounts. Just a desktop app that double-clicks.
 
 ```
 tickwise/
-├── tickwise/              # Python backend
-│   ├── capture/             # Screen capture, window info, idle detection, change detection
-│   ├── ocr/                 # PaddleOCR wrapper
+├── tickwise/
+│   ├── capture/             # Screen capture, window info, idle, change detection
+│   ├── ocr/                 # PaddleOCR wrapper, lazy-loaded
 │   ├── redaction/           # 4-level privacy redaction engine
-│   ├── classification/      # LLM clients (Claude, OpenAI), cache, cost tracking
-│   ├── sessions/            # Session aggregation and tracking
-│   ├── pomodoro/            # Pomodoro state machine
-│   ├── calendar/            # CalDAV, ICS feed, Google Calendar sync
-│   ├── cloudflare/          # Tunnel setup, management, binary download
-│   ├── invoices/            # Invoice generation, PDF rendering, templates
-│   ├── reports/             # Report aggregation, PDF/CSV export
-│   ├── api/                 # FastAPI routes, WebSocket, auth
+│   ├── classification/
+│   │   ├── keyword_matcher.py  # Fuzzy normalized + token-set matching
+│   │   └── pipeline.py         # redact → match → store
+│   ├── sessions/            # Open / extend / close session aggregation
+│   ├── pomodoro/            # Focus/break state machine
+│   ├── calendar/            # CalDAV, ICS feed, Google Calendar
+│   ├── cloudflare/          # Optional Tunnel setup (mobile + ICS only)
+│   ├── invoices/            # PDF generation via WeasyPrint
+│   ├── reports/             # Time / billing / activity aggregation
+│   ├── api/                 # FastAPI routers, WebSocket, bearer auth
 │   ├── db/                  # SQLite connection, schema, migrations
-│   ├── crypto/              # Platform keyring integration
+│   ├── crypto/              # OS keyring (Windows DPAPI / Keychain / Secret Service)
 │   └── platform/            # Cross-platform autostart, notifications, paths
-├── dashboard/               # Angular 19+ dashboard
-├── browser-extension/       # Chrome MV3 + Firefox extension
+├── dashboard/               # Angular 19 standalone components + signals
+├── browser-extension/       # Chrome MV3 + Firefox WebExtensions
 ├── mobile/                  # Angular PWA companion app
-├── tests/                   # pytest: unit, integration, e2e
-├── docs/                    # Specification, phases, ontology
-├── assets/                  # Tray icons
-├── installer/               # NSIS, DMG, AppImage build scripts
-├── AGENTS.md                # AI agent engineering workflow
-├── CHANGELOG.md
-├── requirements.txt
-├── requirements-dev.txt
-├── pyproject.toml
-└── README.md                # You are here
+├── packaging/               # PyInstaller spec, NSIS installer, build scripts
+├── docs/                    # Specification, GitHub Pages site
+└── tests/                   # pytest: unit, integration
 ```
 
 ---
 
-## Development
+## Feature status
 
-### Running Tests
-
-```bash
-# All tests
-pytest
-
-# With coverage
-pytest --cov=tickwise --cov-report=term-missing
-
-# Unit tests only
-pytest tests/unit/
-
-# Specific area
-pytest -k "redaction"
-```
-
-### Code Quality
-
-```bash
-# Format
-black tickwise/ tests/
-
-# Lint
-ruff check tickwise/ tests/ --fix
-
-# Type check
-mypy tickwise/
-
-# All of the above must pass before every commit
-```
-
-### Commit Convention
-
-This project uses [conventional commits](https://www.conventionalcommits.org/):
-
-```
-feat(redaction): add Level 3 person name detection heuristic
-fix(classification): handle empty OCR text without API call
-test(invoices): add VAT calculation edge cases
-docs(api): add OpenAPI descriptions to calendar endpoints
-```
-
-See `AGENTS.md` §3 for full commit discipline.
-
----
-
-## Building for Release
-
-### Windows
-
-```bash
-cd dashboard && ng build --configuration=production --output-path=../tickwise/static
-cd ..
-pyinstaller --onedir --noconsole --name Tickwise tickwise/__main__.py
-# Then run NSIS installer script
-```
-
-### macOS
-
-```bash
-# Same dashboard build, then:
-pyinstaller --onedir --noconsole --name Tickwise tickwise/__main__.py
-# Package as .app → .dmg
-```
-
-### Linux
-
-```bash
-# Same dashboard build, then:
-pyinstaller --onedir --noconsole --name Tickwise tickwise/__main__.py
-# Package as AppImage
-```
+| Feature | Status | Platform |
+| ------- | ------ | -------- |
+| Tray icon + dashboard + capture loop | ✅ Done | Windows |
+| Fuzzy keyword classifier (normalized + token-set) | ✅ Done | All |
+| pHash change detection | ✅ Done | All |
+| Multi-monitor capture | ✅ Done | All |
+| Idle detection | ✅ Done | All |
+| Pomodoro state machine | ✅ Done | All |
+| 4-level redaction engine + custom rules | ✅ Done | All |
+| Invoicing (PDF + line-items + Dutch BTW) | ✅ Done | All |
+| Calendar sync (ICS feed + CalDAV + Google) | ✅ Done | All |
+| Cloudflare Tunnel for mobile + ICS | ✅ Done | All |
+| Mobile PWA + bearer auth + QR pairing | ✅ Done | All |
+| Browser extension (Chrome MV3 + Firefox) | ✅ Done | All |
+| OCR (PaddleOCR, CPU) | 🚧 Optional install | All |
+| macOS build | 📋 Planned | macOS |
+| Linux AppImage build | 📋 Planned | Linux |
+| Code signing | 📋 Planned | All |
 
 ---
 
 ## Performance
 
-| Metric            | Target                              |
-| ----------------- | ----------------------------------- |
-| CPU (idle screen) | < 1%                                |
-| CPU (active use)  | < 5%                                |
-| RAM               | < 200 MB                            |
-| VRAM              | 0 (everything CPU-only)             |
-| LLM calls         | ~2-4/min (change detection + cache) |
-| LLM monthly cost  | ~$1-5 (with caching)                |
-| Dashboard load    | < 2 seconds                         |
-| DB growth         | ~5-10 MB/month                      |
+| Metric | Target | Why it matters |
+| ------ | ------ | -------------- |
+| CPU (idle screen) | < 1 % | Tickwise should be invisible on a quiet day |
+| CPU (active use) | < 5 % | OCR is the only spike — rate-limited by the pHash diff |
+| RAM | < 200 MB | Including bundled dashboard + Python runtime |
+| VRAM | 0 | Everything is CPU. No GPU dependency, no driver headaches |
+| DB growth | ~5–10 MB / month | WAL-mode SQLite, no screenshots stored |
+| Classification calls | 0 / month | Local matcher, no network |
+| Cost | **$0 / month** | The only paid component is the (optional) Cloudflare account for the tunnel |
 
 ---
 
-## Privacy & Security
+## Privacy & security
 
 - **All data stays local.** SQLite database on your machine. No cloud sync, no accounts, no telemetry.
-- **Screenshots are never stored.** Captured in memory, OCR'd, then discarded.
 - **No keylogging.** Input events are counted for idle detection only — keystrokes are never recorded.
-- **Redaction before transmission.** OCR text is stripped of sensitive content before it reaches any LLM API.
+- **Screenshots are never stored.** Captured in memory, OCR'd, then discarded.
+- **Redaction before persistence.** OCR text is stripped of secrets / PII before it touches the database.
 - **API server is local-only.** FastAPI binds to `127.0.0.1` — nothing is accessible from the network.
-- **Tunnel is scoped.** Cloudflare Tunnel exposes only the calendar feed and mobile API endpoints. The dashboard and main API are never exposed.
-- **Credentials in OS keyring.** API keys stored via Windows DPAPI / macOS Keychain / Linux Secret Service — not in the database.
-
----
-
-## Roadmap
-
-Currently in development. See [`docs/implementation-phases.md`](docs/implementation-phases.md) for the full 12-phase plan.
-
-**v1.0 scope is locked.** The following are explicitly out of scope for v1:
-
-- Team/multi-user mode
-- AI-powered auto-learning from corrections
-- Tuta direct API integration
-- Desktop widgets
-- Project management tool integrations (Jira, Linear, Asana)
-- Git commit correlation
-- Screenshot archival
-- Local LLM fallback (Ollama)
+- **Tunnel is scoped.** When enabled, Cloudflare Tunnel exposes only the calendar feed and mobile API. The dashboard is never exposed.
+- **Credentials in OS keyring.** Mobile bearer-token hashes go in SQLite; anything secret (Cloudflare token, Google OAuth refresh token) goes through Windows DPAPI / macOS Keychain / Linux Secret Service.
 
 ---
 
 ## Contributing
 
-Tickwise is built specification-first. Before contributing:
+Contributions of any kind are welcome — bug reports, redaction rules, new calendar providers, platform builds, dashboard polish. To get started:
 
-1. Read [`AGENTS.md`](AGENTS.md) for development practices
-2. Read the relevant section of [`docs/specification.md`](docs/specification.md)
-3. Check [`docs/implementation-phases.md`](docs/implementation-phases.md) for current phase status
-4. Follow the commit convention and testing requirements
+1. Fork the repository and create a feature branch.
+2. Run the tests with `pytest`. Format with `black`, lint with `ruff`, type-check with `mypy`.
+3. New features should ship with tests. Bug fixes should ship with the regression test that would have caught them.
+4. Open a pull request describing what you changed and why.
 
-All contributions must include tests and pass `black`, `ruff`, `mypy`, and `pytest` before merge.
-
----
-
-## License
-
-[MIT](LICENSE)
+Tickwise is licensed under the **GNU General Public License v3.0**. See [`LICENSE`](LICENSE) for the full text.
 
 ---
 
-## Acknowledgements
+<div align="center">
 
-Built with [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR), [FastAPI](https://fastapi.tiangolo.com/), [Angular](https://angular.dev/), and the [Anthropic](https://www.anthropic.com/) / [OpenAI](https://openai.com/) APIs.
+<img src="docs/assets/icon.svg" width="48" alt="Tickwise" />
 
-Standards compliance guided by the [Global Software Engineering Standards Ontology](docs/engineering-ontology.md).
+<br />
+<br />
+
+Made with care by [Hylke Hellinga](https://github.com/hylkehellinga)
+
+</div>

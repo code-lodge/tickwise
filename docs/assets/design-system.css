@@ -1,0 +1,345 @@
+/* ============================================================
+   Code Lodge — Design System
+   Canonical brand tokens shared across Code Lodge apps.
+
+   Drop-in usage:
+     <link rel="stylesheet" href="design-system.css" />
+
+   The :root tokens define the palette, type scale, radii, shadows
+   and motion. Component classes (`.cl-btn`, `.cl-card`, `.cl-nav`,
+   etc.) compose those tokens so an app's landing page or marketing
+   site can stay on-brand without re-implementing the look.
+
+   Source palette: includa.app — extracted to a public design system
+   so shellwright.app, includa.app, tickwise.app and any future
+   Code Lodge product can ship with one identity.
+   ============================================================ */
+
+:root {
+  /* ── Surface ─────────────────────────────────────────────── */
+  --cl-bg: #08131d;
+  --cl-bg-2: #0c1d2a;
+  --cl-panel: rgba(12, 29, 42, 0.78);
+  --cl-panel-strong: rgba(10, 24, 35, 0.96);
+  --cl-stroke: rgba(157, 197, 220, 0.18);
+  --cl-stroke-strong: rgba(157, 197, 220, 0.32);
+
+  /* ── Text ────────────────────────────────────────────────── */
+  --cl-text: #e9f2f8;
+  --cl-muted: #9fb4c3;
+  --cl-dim: #5a6b80;
+
+  /* ── Accents ─────────────────────────────────────────────── */
+  --cl-accent: #2dd4bf;        /* teal — primary brand */
+  --cl-accent-2: #38bdf8;      /* cyan — secondary */
+  --cl-accent-warm: #fb923c;   /* orange — warning */
+  --cl-critical: #ef4444;      /* red — error */
+  --cl-good: #22c55e;          /* green — success / tracking */
+  --cl-violet: #7c6af7;        /* violet — tertiary */
+
+  /* ── Status surfaces ────────────────────────────────────── */
+  --cl-warn-bg: rgba(251, 146, 60, 0.08);
+  --cl-warn-border: rgba(251, 146, 60, 0.32);
+  --cl-good-bg: rgba(34, 197, 94, 0.10);
+  --cl-good-border: rgba(34, 197, 94, 0.32);
+  --cl-critical-bg: rgba(239, 68, 68, 0.10);
+  --cl-critical-border: rgba(239, 68, 68, 0.32);
+
+  /* ── Geometry ───────────────────────────────────────────── */
+  --cl-radius-sm: 8px;
+  --cl-radius: 14px;
+  --cl-radius-lg: 22px;
+  --cl-radius-pill: 999px;
+
+  /* ── Shadows ────────────────────────────────────────────── */
+  --cl-shadow-sm: 0 4px 14px rgba(2, 8, 14, 0.35);
+  --cl-shadow-md: 0 14px 40px rgba(2, 8, 14, 0.5);
+  --cl-shadow-lg: 0 28px 80px rgba(2, 8, 14, 0.6);
+
+  /* ── Motion + focus ─────────────────────────────────────── */
+  --cl-focus-ring: 0 0 0 3px var(--cl-accent);
+  --cl-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* ── Typography ─────────────────────────────────────────── */
+  --cl-font-display: "Space Grotesk", system-ui, -apple-system, sans-serif;
+  --cl-font-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --cl-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* ── Layout ─────────────────────────────────────────────── */
+  --cl-content-width: 1100px;
+}
+
+/* ============================================================
+   Reset + base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--cl-bg);
+  color: var(--cl-text);
+  font-family: var(--cl-font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: var(--cl-accent); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+a:focus-visible,
+button:focus-visible {
+  outline: none;
+  box-shadow: var(--cl-focus-ring);
+  border-radius: 4px;
+}
+img { max-width: 100%; display: block; height: auto; }
+
+h1, h2, h3, h4 {
+  font-family: var(--cl-font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.6em;
+  color: var(--cl-text);
+}
+h1 { font-size: clamp(2.4rem, 6vw, 4rem); line-height: 1.05; }
+h2 { font-size: clamp(1.7rem, 4vw, 2.5rem); line-height: 1.15; }
+h3 { font-size: 1.15rem; line-height: 1.3; }
+
+p { margin: 0 0 1em; color: var(--cl-text); }
+.cl-muted, p.cl-muted { color: var(--cl-muted); }
+
+/* Gradient text helper for hero accents */
+.cl-accent-text {
+  background: linear-gradient(120deg, var(--cl-accent), var(--cl-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ============================================================
+   Layout primitives
+   ============================================================ */
+.cl-shell { max-width: var(--cl-content-width); margin: 0 auto; padding: 0 1.5rem; }
+
+/* Skip link for keyboard users */
+.cl-skip-link {
+  position: absolute; left: 0.5rem; top: -3rem;
+  padding: 0.6rem 1rem; background: var(--cl-accent); color: #02151b;
+  border-radius: var(--cl-radius-sm); font-weight: 600; z-index: 1000;
+  transition: top 0.2s var(--cl-ease);
+}
+.cl-skip-link:focus { top: 0.5rem; text-decoration: none; }
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+.cl-nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(8, 19, 29, 0.82);
+  backdrop-filter: saturate(140%) blur(12px);
+  -webkit-backdrop-filter: saturate(140%) blur(12px);
+  border-bottom: 1px solid var(--cl-stroke);
+}
+.cl-nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 0;
+}
+.cl-brand {
+  font-family: var(--cl-font-display);
+  font-weight: 700; font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  display: flex; align-items: center; gap: 0.55rem;
+  color: var(--cl-text);
+}
+.cl-brand:hover { text-decoration: none; }
+.cl-brand-mark {
+  width: 30px; height: 30px;
+  border-radius: var(--cl-radius-sm);
+  background: linear-gradient(135deg, var(--cl-accent), var(--cl-accent-2));
+  display: grid; place-items: center;
+  color: #02151b; font-weight: 800; font-size: 0.88rem;
+}
+.cl-nav-links { display: flex; gap: 1.4rem; align-items: center; font-size: 0.94rem; }
+.cl-nav-links a { color: var(--cl-muted); padding: 0.3rem 0.8rem; border-radius: 6px; }
+.cl-nav-links a:hover { color: var(--cl-text); text-decoration: none; }
+
+.cl-nav-cta {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  background: rgba(45, 212, 191, 0.14);
+  border: 1px solid rgba(45, 212, 191, 0.36);
+  color: var(--cl-accent) !important;
+  font-weight: 600;
+  transition: background 0.15s var(--cl-ease);
+}
+.cl-nav-cta:hover { background: rgba(45, 212, 191, 0.22); text-decoration: none; }
+.cl-nav-cta svg { width: 16px; height: 16px; }
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.cl-btn {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: var(--cl-radius-sm);
+  font: inherit; font-weight: 600;
+  cursor: pointer; border: 1px solid transparent;
+  transition: transform 0.15s var(--cl-ease),
+              background 0.15s var(--cl-ease),
+              border-color 0.15s var(--cl-ease);
+  text-decoration: none;
+}
+.cl-btn-primary {
+  background: linear-gradient(120deg, var(--cl-accent), var(--cl-accent-2));
+  color: #02151b !important;
+}
+.cl-btn-primary:hover { transform: translateY(-1px); text-decoration: none; }
+.cl-btn-secondary {
+  background: transparent;
+  border-color: var(--cl-stroke-strong);
+  color: var(--cl-text) !important;
+}
+.cl-btn-secondary:hover {
+  border-color: var(--cl-muted);
+  background: rgba(157, 197, 220, 0.06);
+  text-decoration: none;
+}
+.cl-btn-ghost {
+  background: transparent; color: var(--cl-muted) !important;
+  border-color: transparent;
+}
+.cl-btn-ghost:hover { color: var(--cl-text) !important; background: rgba(157,197,220,.06); text-decoration: none; }
+
+/* ============================================================
+   Surface / cards
+   ============================================================ */
+.cl-card {
+  background: var(--cl-panel);
+  border: 1px solid var(--cl-stroke);
+  border-radius: var(--cl-radius);
+  padding: 1.6rem;
+  box-shadow: var(--cl-shadow-sm);
+  transition: border-color 0.18s var(--cl-ease), transform 0.18s var(--cl-ease);
+}
+.cl-card:hover { border-color: var(--cl-stroke-strong); }
+
+.cl-panel-strong {
+  background: var(--cl-panel-strong);
+  border: 1px solid var(--cl-stroke);
+  border-radius: var(--cl-radius);
+  box-shadow: var(--cl-shadow-md);
+}
+
+/* ============================================================
+   Pills / badges
+   ============================================================ */
+.cl-pill {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--cl-radius-pill);
+  font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--cl-stroke-strong);
+  background: var(--cl-panel-strong);
+  color: var(--cl-muted);
+}
+.cl-pill-good {
+  background: var(--cl-good-bg);
+  border-color: var(--cl-good-border);
+  color: var(--cl-good);
+}
+.cl-pill-warn {
+  background: var(--cl-warn-bg);
+  border-color: var(--cl-warn-border);
+  color: var(--cl-accent-warm);
+}
+.cl-pill-critical {
+  background: var(--cl-critical-bg);
+  border-color: var(--cl-critical-border);
+  color: var(--cl-critical);
+}
+.cl-pill-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; box-shadow: 0 0 8px currentColor;
+}
+
+/* ============================================================
+   Sections
+   ============================================================ */
+.cl-section { padding: 5rem 0; }
+.cl-section-header { text-align: center; margin-bottom: 3rem; }
+.cl-section-label {
+  display: inline-block; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--cl-accent); margin-bottom: 0.85rem;
+  font-family: var(--cl-font-display);
+}
+.cl-section-sub {
+  color: var(--cl-muted); margin-top: 0.85rem;
+  font-size: 1.05rem; max-width: 620px;
+  margin-left: auto; margin-right: auto;
+}
+
+/* ============================================================
+   Code blocks
+   ============================================================ */
+code, pre, kbd {
+  font-family: var(--cl-font-mono);
+  font-size: 0.92em;
+}
+.cl-code-inline {
+  background: var(--cl-bg-2);
+  padding: 0.1em 0.45em;
+  border-radius: 4px;
+  color: var(--cl-accent);
+  border: 1px solid var(--cl-stroke);
+}
+.cl-codeblock {
+  background: var(--cl-bg-2);
+  border: 1px solid var(--cl-stroke);
+  border-radius: var(--cl-radius);
+  overflow: hidden;
+}
+.cl-codeblock-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: var(--cl-panel);
+  border-bottom: 1px solid var(--cl-stroke);
+  font-family: var(--cl-font-mono); font-size: 0.78rem;
+  color: var(--cl-muted);
+}
+.cl-codeblock pre {
+  margin: 0; padding: 1.1rem 1.4rem;
+  overflow-x: auto;
+  font-size: 0.85rem; line-height: 1.7;
+  color: var(--cl-text);
+}
+.cl-codeblock .c { color: var(--cl-dim); }       /* comment */
+.cl-codeblock .k { color: var(--cl-accent-2); }  /* keyword */
+.cl-codeblock .s { color: var(--cl-good); }      /* string */
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.cl-footer {
+  border-top: 1px solid var(--cl-stroke);
+  padding: 2.5rem 0 3rem;
+  text-align: center;
+  color: var(--cl-muted); font-size: 0.88rem;
+}
+.cl-footer a { color: var(--cl-text); }
+.cl-footer .cl-sep { margin: 0 0.6rem; color: var(--cl-dim); }
+.cl-footer .cl-made { margin-top: 0.7rem; color: var(--cl-dim); }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 720px) {
+  .cl-nav-links a:not(.cl-nav-cta) { display: none; }
+  .cl-section { padding: 3.25rem 0; }
+}

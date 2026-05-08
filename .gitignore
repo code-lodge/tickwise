@@ -60,6 +60,18 @@ frontend/node_modules/
 frontend/dist/
 frontend/.angular/
 frontend/.npm/
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.angular/
+mobile/node_modules/
+mobile/dist/
+
+# PyInstaller build cache + dist (built locally, shipped via release)
+build_pyinstaller/
+dist/
+
+# Built dashboard bundle (generated, copied into tickwise/static at build time)
+tickwise/static/
 
 # Tickwise runtime data (local dev)
 *.db
