@@ -194,16 +194,30 @@ def reclassify_stored_activities(only_unclassified: bool = True) -> dict[str, in
     # it's the column the timeline actually reads when deciding what
     # bucket to show the row in — so even if activities matched, the
     # session can still display "Unclassified" until we update it.
+    #
+    # We also pull OCR text from activities that overlap each session
+    # so a session whose description is the useless "Edge and 8 more
+    # pages" still classifies when its on-screen text proves the user
+    # was on the Sceneryenzo Shopify admin (or any other project).
     session_rows = conn.execute(
-        f"SELECT id, description, project_id FROM sessions {where}"
+        f"SELECT id, started_at, ended_at, description, project_id FROM sessions {where}"
     ).fetchall()
 
     sessions_matched = 0
     for row in session_rows:
-        desc = row["description"]
-        if not desc:
+        desc = row["description"] or ""
+        ocr_blobs = conn.execute(
+            "SELECT ocr_text FROM activities "
+            "WHERE captured_at >= ? AND captured_at <= ? "
+            "AND ocr_text IS NOT NULL AND ocr_text != '' "
+            "LIMIT 20",
+            (row["started_at"], row["ended_at"]),
+        ).fetchall()
+        ocr_combined = " ".join(o["ocr_text"] for o in ocr_blobs if o["ocr_text"])
+        haystack = (desc + " " + ocr_combined).strip()
+        if not haystack:
             continue
-        norm_hay = _normalize(desc)
+        norm_hay = _normalize(haystack)
         if len(norm_hay) < _MIN_NORMALIZED_LEN:
             continue
         hit = _best_match(norm_hay, projects)
