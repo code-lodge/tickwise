@@ -10,14 +10,24 @@ from fastapi.testclient import TestClient
 
 @pytest.mark.integration
 class TestDevFallback:
-    def test_root_returns_dev_pointer_when_no_static(self, client: TestClient) -> None:
-        r = client.get("/")
-        # When tickwise/static/ is empty (typical in tests), the root
-        # endpoint returns a JSON pointer to /api/docs.
-        assert r.status_code == 200
-        body = r.json()
-        assert body["status"] == "dev"
-        assert body["api_docs"] == "/api/docs"
+    def test_root_returns_dev_pointer_when_no_static(self, tmp_path: Path) -> None:
+        # Don't depend on whether the dev workstation has run `ng build`
+        # — point the app at an empty directory and verify the fallback.
+        from tickwise import app as app_module
+        from tickwise.app import create_app
+
+        original = app_module._STATIC_DIR
+        try:
+            app_module._STATIC_DIR = tmp_path / "static-empty"  # type: ignore[misc]
+            app = create_app()
+            with TestClient(app) as tc:
+                r = tc.get("/")
+            assert r.status_code == 200
+            body = r.json()
+            assert body["status"] == "dev"
+            assert body["api_docs"] == "/api/docs"
+        finally:
+            app_module._STATIC_DIR = original  # type: ignore[misc]
 
 
 @pytest.mark.integration

@@ -136,6 +136,22 @@ def create_app() -> FastAPI:
     return app
 
 
+def _resolve_static_root() -> Path | None:
+    """Find the directory that actually holds index.html.
+
+    Angular ≥ 17 emits the SPA into a ``browser/`` subdirectory when the
+    project has prerender / SSR routes configured (which we do). Older
+    builds (and the PyInstaller bundle from before this change) put
+    everything directly under ``tickwise/static/``. Try both so a fresh
+    ``ng build`` and a packaged exe both work.
+    """
+    candidates = [_STATIC_DIR / "browser", _STATIC_DIR]
+    for candidate in candidates:
+        if candidate.is_dir() and (candidate / "index.html").is_file():
+            return candidate
+    return None
+
+
 def _mount_static_dashboard(app: FastAPI) -> None:
     """Serve the built Angular dashboard from `tickwise/static/` if present.
 
@@ -143,24 +159,25 @@ def _mount_static_dashboard(app: FastAPI) -> None:
     bundle isn't installed (development mode where Angular is served by
     `ng serve` on :4200 with a proxy to this API).
     """
-    if _STATIC_DIR.is_dir() and (_STATIC_DIR / "index.html").is_file():
+    static_root = _resolve_static_root()
+    if static_root is not None:
         app.mount(
             "/static",
-            StaticFiles(directory=_STATIC_DIR, html=False),
+            StaticFiles(directory=static_root, html=False),
             name="static-assets",
         )
 
         @app.get("/", include_in_schema=False)
         async def root() -> FileResponse:
-            return FileResponse(_STATIC_DIR / "index.html")
+            return FileResponse(static_root / "index.html")
 
         @app.get("/{path:path}", include_in_schema=False)
         async def spa_fallback(path: str) -> FileResponse:
-            target = _STATIC_DIR / path
+            target = static_root / path
             if target.is_file():
                 return FileResponse(target)
             # Angular routing falls back to index.html for unknown client routes.
-            return FileResponse(_STATIC_DIR / "index.html")
+            return FileResponse(static_root / "index.html")
 
     else:
 
