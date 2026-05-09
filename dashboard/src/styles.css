@@ -30,23 +30,6 @@ body {
     var(--cl-bg);
 }
 
-/* Light theme override — the user's dark-mode toggle flips this. */
-body[data-theme="light"] {
-  --cl-bg: #f4f7fa;
-  --cl-bg-2: #ffffff;
-  --cl-panel: rgba(255, 255, 255, 0.92);
-  --cl-panel-strong: #ffffff;
-  --cl-stroke: rgba(15, 23, 42, 0.10);
-  --cl-stroke-strong: rgba(15, 23, 42, 0.18);
-  --cl-text: #0f172a;
-  --cl-muted: #475569;
-  --cl-dim: #94a3b8;
-  background:
-    radial-gradient(900px 500px at 18% -10%, rgba(45, 212, 191, 0.12), transparent 60%),
-    radial-gradient(800px 450px at 92% 8%, rgba(56, 189, 248, 0.10), transparent 60%),
-    var(--cl-bg);
-}
-
 /* ── Form controls ─────────────────────────────────────── */
 button {
   cursor: pointer;

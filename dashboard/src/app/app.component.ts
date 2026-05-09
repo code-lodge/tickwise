@@ -47,9 +47,6 @@ interface OnboardingState {
         <a routerLink="/privacy" routerLinkActive="active">Privacy</a>
         <a routerLink="/settings" routerLinkActive="active">Settings</a>
       </nav>
-      <button class="ghost" (click)="toggleTheme()" title="Toggle theme">
-        {{ theme() === 'dark' ? '☀' : '☾' }}
-      </button>
     </header>
 
     <main class="page">
@@ -70,7 +67,6 @@ interface OnboardingState {
         top: 0;
         z-index: 10;
       }
-      body[data-theme="light"] .topbar { background: rgba(255, 255, 255, 0.85); }
       .brand {
         display: flex; gap: 0.6rem; align-items: center;
         font-family: var(--cl-font-display);
@@ -112,10 +108,14 @@ export class AppComponent {
 
   status = signal<{ tracking: boolean; version: string } | null>(null);
   onboarding = signal<OnboardingState | null>(null);
-  theme = signal<'light' | 'dark' | null>(localStorage.getItem('tickwise.theme') as 'light' | 'dark' | null);
 
   constructor() {
-    this.applyTheme();
+    // Clean up the legacy theme attribute / preference for users who
+    // toggled "light" before the toggle was removed — otherwise their
+    // body still carries data-theme="light" forever.
+    delete document.body.dataset['theme'];
+    localStorage.removeItem('tickwise.theme');
+
     this.refreshStatus();
     this.refreshOnboarding();
     setInterval(() => this.refreshStatus(), 5000);
@@ -139,19 +139,6 @@ export class AppComponent {
   dismissBanner(): void {
     sessionStorage.setItem('tickwise.banner.dismissed', '1');
     this.onboarding.set(null);
-  }
-
-  toggleTheme(): void {
-    const next = this.theme() === 'dark' ? 'light' : 'dark';
-    this.theme.set(next);
-    localStorage.setItem('tickwise.theme', next);
-    this.applyTheme();
-  }
-
-  private applyTheme(): void {
-    const t = this.theme();
-    if (t) document.body.dataset['theme'] = t;
-    else delete document.body.dataset['theme'];
   }
 
   // Keyboard shortcuts: Ctrl/Cmd+P → pomodoro, Ctrl/Cmd+, → settings.
