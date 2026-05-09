@@ -65,9 +65,17 @@ class TestDataRetention:
         assert ".write_bytes(" not in src or "screenshot" not in src.lower()
         assert "open(" not in src or "screenshot" not in src.lower()
 
-    def test_persisted_text_capped_at_200_chars(self) -> None:
+    def test_persisted_text_is_capped(self) -> None:
+        """OCR text gets truncated before it ever reaches SQLite.
+
+        Cap was raised from 200 → 1500 chars so retrospective
+        keyword reclassification can find brand names that don't
+        always land in the first paragraph of a screenshot. The
+        invariant we still defend is that *some* finite cap exists
+        — we don't store unbounded screen text.
+        """
         src = Path("tickwise/capture/loop.py").read_text(encoding="utf-8")
-        assert "ocr_text[:200]" in src, "redacted_text must be truncated before persistence"
+        assert "ocr_text[:1500]" in src, "redacted_text must be truncated before persistence"
 
 
 @pytest.mark.integration

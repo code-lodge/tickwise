@@ -34,6 +34,60 @@ class _OpenSession:
     last_seen_at: datetime
     description: str | None = None
     activity_ids: list[int] = field(default_factory=list)
+    # Latest OCR snippet captured during this session — fed into the
+    # close-time keyword matcher so a session classifies even when its
+    # title is the useless "Tickwise and 8 more pages" Edge collapse.
+    latest_ocr_text: str = ""
+
+
+# Browser executables we recognise — when the active process is one of
+# these AND the extension has pushed fresh context, we treat the
+# extension's tab title as the effective window title. That keeps
+# sessions keyed per-tab (so a switch from Shopify to Reddit splits
+# them) and gives the timeline a readable description instead of the
+# OS-level "Edge and 8 more pages" label.
+_BROWSER_PROCESSES: frozenset[str] = frozenset(
+    {
+        "msedge.exe",
+        "chrome.exe",
+        "firefox.exe",
+        "brave.exe",
+        "opera.exe",
+        "vivaldi.exe",
+        "arc.exe",
+        # macOS / Linux process names.
+        "Microsoft Edge",
+        "Google Chrome",
+        "Firefox",
+        "firefox",
+        "chromium",
+        "Brave Browser",
+        "Safari",
+    }
+)
+
+
+def _is_browser(process_name: str | None) -> bool:
+    if not process_name:
+        return False
+    return process_name in _BROWSER_PROCESSES or process_name.lower() in _BROWSER_PROCESSES
+
+
+def _effective_title(window: WindowInfo) -> str:
+    """Browser-aware window title.
+
+    For browser processes with a fresh extension context, return the tab
+    title the extension reported. Falls back to the OS title otherwise
+    (no extension installed, non-browser app, or stale context).
+    """
+    if not _is_browser(window.process_name):
+        return window.title
+    from tickwise.capture import browser_bridge
+
+    ctx = browser_bridge.latest()
+    if ctx is None or not ctx.title:
+        return window.title
+    return ctx.title
 
 
 class SessionTracker:
@@ -67,17 +121,18 @@ class SessionTracker:
         the last sample exceeds `idle_merge_threshold`, also close and
         reopen — we treat that as a discontinuity.
         """
+        eff_title = _effective_title(window)
         with self._lock:
             if self._open is None:
                 self._open = _OpenSession(
                     process=window.process_name,
-                    title=window.title,
+                    title=eff_title,
                     started_at=now,
                     last_seen_at=now,
                 )
                 return
 
-            same_window = self._open.process == window.process_name and self._open.title == window.title
+            same_window = self._open.process == window.process_name and self._open.title == eff_title
             gap = (now - self._open.last_seen_at).total_seconds()
             if same_window and gap <= self._merge_threshold:
                 self._open.last_seen_at = now
@@ -86,18 +141,25 @@ class SessionTracker:
             self._close_locked(closed_at=self._open.last_seen_at)
             self._open = _OpenSession(
                 process=window.process_name,
-                title=window.title,
+                title=eff_title,
                 started_at=now,
                 last_seen_at=now,
             )
 
-    def on_change(self, window: WindowInfo, now: datetime) -> None:
+    def on_change(self, window: WindowInfo, now: datetime, ocr_text: str = "") -> None:
         """Called when the capture loop detects a screen change.
 
-        Logically equivalent to `extend()` for Phase 1 — we use the same
-        merge rules. Future phases can attach the activity_id here.
+        Same merge rules as ``extend()``. The optional ``ocr_text`` is
+        stamped on the (possibly newly opened) session so the close-time
+        matcher can see what was actually on screen — a richer signal
+        than the often-collapsed window title.
         """
         self.extend(window, now)
+        if ocr_text and self._open is not None:
+            with self._lock:
+                # Replace, not append — keeps memory bounded and the
+                # matcher only needs a recent snapshot, not history.
+                self._open.latest_ocr_text = ocr_text
 
     def flush(self) -> int | None:
         """Close and persist the open session (if any). Returns its row id."""
@@ -131,7 +193,13 @@ class SessionTracker:
 
         description = f"{sess.process} — {sess.title}".strip(" —") or None
         ctx = browser_bridge.latest()
-        haystack_parts = [description, ctx.url if ctx else None, ctx.title if ctx else None]
+        haystack_parts = [
+            description,
+            ctx.url if ctx else None,
+            ctx.title if ctx else None,
+            ctx.content_snippet if ctx else None,
+            sess.latest_ocr_text or None,
+        ]
         haystack = " ".join(p for p in haystack_parts if p)
         hit = match_project(haystack) if haystack else None
         project_id = hit.project_id if hit else None

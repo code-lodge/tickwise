@@ -48,7 +48,7 @@ class CaptureLoop:
         ocr_downscale_width: int | None = None,
         ocr_runner: Callable[[Screenshot, int], str] | None = None,
         on_session_extend: Callable[[WindowInfo, datetime], None] | None = None,
-        on_session_change: Callable[[WindowInfo, datetime], None] | None = None,
+        on_session_change: Callable[..., None] | None = None,
     ) -> None:
         self._tick_seconds = tick_seconds
         self._idle_split = (
@@ -197,7 +197,12 @@ class CaptureLoop:
             )
         )
         if self._on_change is not None:
-            self._on_change(window, now)
+            try:
+                self._on_change(window, now, ocr_text)
+            except TypeError:
+                # Back-compat for callbacks that haven't grown the
+                # ocr_text parameter yet (older tests, future stubs).
+                self._on_change(window, now)
         return True
 
     def _pick_focused_monitor(self, shots: dict[int, Screenshot]) -> int:
@@ -285,7 +290,11 @@ class CaptureLoop:
         captured_at: datetime,
         monitor_index: int = 1,
     ) -> int | None:
-        snippet = ocr_text[:200] if ocr_text else None
+        # 1500 chars — enough for retrospective reclassification to find
+        # keywords that don't always land in the first paragraph (e.g.
+        # "sceneryenzo" appearing in a Shopify breadcrumb halfway down
+        # the screenshot), bounded so the table stays cheap.
+        snippet = ocr_text[:1500] if ocr_text else None
         from tickwise import runtime
 
         timer = runtime.get_pomodoro_timer()

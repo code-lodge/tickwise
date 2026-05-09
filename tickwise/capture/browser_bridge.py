@@ -21,7 +21,11 @@ from tickwise.redaction.engine import RedactionEngine
 
 logger = logging.getLogger(__name__)
 
-_STALENESS_SECS = 5.0
+# 90s — long enough that quietly reading the same tab keeps the URL +
+# tab title available to the classifier, short enough that closing the
+# browser without a clean disconnect doesn't haunt the next hour of
+# captures with a stale URL.
+_STALENESS_SECS = 90.0
 
 
 @dataclass(frozen=True, slots=True)

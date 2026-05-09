@@ -44,8 +44,11 @@ class TestBridge:
 
     def test_stale_context_returns_none(self) -> None:
         browser_bridge.update(url="https://x", title="t", content_snippet=None)
-        # Advance time well past the staleness window.
-        with patch("tickwise.capture.browser_bridge.time.monotonic", return_value=time.monotonic() + 60):
+        # Advance time well past the staleness window (90s).
+        with patch(
+            "tickwise.capture.browser_bridge.time.monotonic",
+            return_value=time.monotonic() + 600,
+        ):
             assert browser_bridge.latest() is None
 
 

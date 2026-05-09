@@ -60,7 +60,7 @@ class TestCaptureLoopTick:
         assert len(rows) == 1
         assert rows[0]["window_title"] == "VS Code"
         assert rows[0]["process_name"] == "code.exe"
-        assert rows[0]["source"] == "pending_classification"
+        assert rows[0]["source"] == "unclassified"
         assert rows[0]["change_detected"] == 1
         assert rows[0]["ocr_text"] == "hello world"
 

@@ -54,6 +54,14 @@ _psapi.GetModuleBaseNameW.argtypes = [
 ]
 _psapi.GetModuleBaseNameW.restype = wintypes.DWORD
 
+_kernel32.QueryFullProcessImageNameW.argtypes = [
+    wintypes.HANDLE,
+    wintypes.DWORD,
+    wintypes.LPWSTR,
+    ctypes.POINTER(wintypes.DWORD),
+]
+_kernel32.QueryFullProcessImageNameW.restype = wintypes.BOOL
+
 
 def _window_title(hwnd: int) -> str:
     length = _user32.GetWindowTextLengthW(hwnd)
@@ -65,13 +73,28 @@ def _window_title(hwnd: int) -> str:
 
 
 def _process_name(pid: int) -> str:
+    """Return the executable basename for ``pid`` (e.g. ``msedge.exe``).
+
+    Uses ``QueryFullProcessImageNameW`` because ``GetModuleBaseNameW``
+    silently fails when the handle was opened with only
+    ``PROCESS_QUERY_LIMITED_INFORMATION`` — which is the only access
+    level Windows reliably grants to non-elevated callers asking about
+    sandboxed processes (browsers, Discord, the Tickwise installer).
+    """
     handle = _kernel32.OpenProcess(_PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not handle:
         return ""
     try:
-        buf = ctypes.create_unicode_buffer(260)
-        copied = _psapi.GetModuleBaseNameW(handle, None, buf, 260)
-        return buf.value if copied else ""
+        buf = ctypes.create_unicode_buffer(1024)
+        size = wintypes.DWORD(1024)
+        if not _kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)):
+            return ""
+        full_path = buf.value
+        if not full_path:
+            return ""
+        # Take basename without importing pathlib for a hot-path call.
+        sep = max(full_path.rfind("\\"), full_path.rfind("/"))
+        return full_path[sep + 1 :] if sep >= 0 else full_path
     finally:
         _kernel32.CloseHandle(handle)
 
