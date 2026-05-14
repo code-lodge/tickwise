@@ -157,11 +157,17 @@ p { margin: 0 0 1em; color: var(--cl-text); }
 }
 .cl-brand:hover { text-decoration: none; }
 .cl-brand-mark {
-  width: 30px; height: 30px;
+  width: 32px; height: 32px;
+  /* The Tickwise logo SVG is the actual mark — keep this rule minimal
+     so it renders crisply whether the element is an <img> or a
+     fallback styled <span>. */
+  display: inline-block;
+  object-fit: contain;
+  /* Fallback gradient + initial used to ship here when the mark was a
+     letter-T placeholder; left as a defensive backdrop so old caches
+     don't show a blank square if the SVG ever fails to load. */
   border-radius: var(--cl-radius-sm);
   background: linear-gradient(135deg, var(--cl-accent), var(--cl-accent-2));
-  display: grid; place-items: center;
-  color: #02151b; font-weight: 800; font-size: 0.88rem;
 }
 .cl-nav-links { display: flex; gap: 1.4rem; align-items: center; font-size: 0.94rem; }
 .cl-nav-links a { color: var(--cl-muted); padding: 0.3rem 0.8rem; border-radius: 6px; }
