@@ -22,7 +22,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="assets/design-system.css" />
+  <link rel="stylesheet" href="assets/design-system.css?v=2" />
   <style>
     /* ── Page-specific composition on top of design system ── */
     body {
@@ -205,7 +205,8 @@
       <!-- Inline SVG so the logo can't get stuck on a stale cached
            file — pulling fresh HTML is enough to see the new mark. -->
       <svg class="cl-brand-mark" viewBox="0 0 512 512" width="32" height="32"
-           xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+           xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+           style="background:none;border-radius:0">
         <defs>
           <linearGradient id="nav-tw-face" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
             <stop offset="0" stop-color="#2dd4bf"/>
