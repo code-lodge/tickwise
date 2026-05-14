@@ -202,7 +202,22 @@
 <header class="cl-nav">
   <div class="cl-shell cl-nav-inner">
     <a class="cl-brand" href="#">
-      <img class="cl-brand-mark" src="assets/icon.svg" alt="" width="32" height="32" />
+      <!-- Inline SVG so the logo can't get stuck on a stale cached
+           file — pulling fresh HTML is enough to see the new mark. -->
+      <svg class="cl-brand-mark" viewBox="0 0 512 512" width="32" height="32"
+           xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="nav-tw-face" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#2dd4bf"/>
+            <stop offset="1" stop-color="#38bdf8"/>
+          </linearGradient>
+        </defs>
+        <circle cx="256" cy="256" r="240" fill="url(#nav-tw-face)"/>
+        <circle cx="256" cy="256" r="180" fill="none" stroke="#cbd5e1" stroke-width="10"/>
+        <rect x="240" y="120" width="32" height="156" rx="14" fill="#0c0f1c"/>
+        <rect x="256" y="244" width="148" height="32" rx="14" fill="#0c0f1c"/>
+        <circle cx="256" cy="256" r="20" fill="#0c0f1c"/>
+      </svg>
       Tickwise
     </a>
     <nav class="cl-nav-links">
