@@ -4,6 +4,7 @@
 
 <br />
 
+[![Status: Alpha](https://img.shields.io/badge/status-alpha-fb923c?style=flat-square)](#-alpha-status)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-2dd4bf?style=flat-square)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/code-lodge/tickwise?style=flat-square&color=38bdf8)](https://github.com/code-lodge/tickwise/releases/latest)
 [![Build](https://img.shields.io/github/actions/workflow/status/code-lodge/tickwise/release.yml?style=flat-square&label=build)](https://github.com/code-lodge/tickwise/actions)
@@ -15,6 +16,20 @@
 [Website](https://tickwise.app) · [Download](https://github.com/code-lodge/tickwise/releases/latest) · [Browser extension](#-browser-extension) · [Configuration](#%EF%B8%8F-configuration) · [Contributing](#-contributing)
 
 </div>
+
+---
+
+> [!WARNING]
+> ## 🚧 Alpha status
+>
+> **Tickwise is in alpha and is *not* ready for production use.** Expect:
+>
+> - Breaking changes between releases — database schema, settings layout, and APIs may shift without notice.
+> - Rough edges in classification, OCR, the dashboard, and the installer. Things that look polished may still break.
+> - Bugs that affect data integrity. Don't trust tracked hours for billing yet without spot-checking.
+> - Missing platforms — only Windows installers are produced today; macOS / Linux ship later.
+>
+> Use it, kick the tyres, and please [file issues](https://github.com/code-lodge/tickwise/issues) — but **don't bet a client invoice on it yet**. A stable 1.0 will be tagged when the schema and APIs settle.
 
 ---
 

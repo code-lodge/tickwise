@@ -156,11 +156,43 @@
       .demo-side { display: none; }
       .kw-demo { grid-template-columns: 1fr; }
     }
+
+    /* Alpha banner — sticky, visible from the moment the page loads */
+    .alpha-banner {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--cl-warn-bg);
+      border-bottom: 1px solid var(--cl-warn-border);
+      color: var(--cl-text);
+      text-align: center;
+      padding: 0.7rem 1.25rem;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      backdrop-filter: saturate(140%) blur(10px);
+    }
+    .alpha-banner strong { color: var(--cl-accent-warm); }
+    .alpha-banner a {
+      color: var(--cl-accent-2);
+      margin-left: 0.4rem;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .alpha-banner a:hover { text-decoration: underline; }
+    @media (max-width: 720px) {
+      .alpha-banner { font-size: 0.82rem; padding: 0.55rem 0.85rem; }
+    }
   </style>
 </head>
 <body>
 
 <a class="cl-skip-link" href="#main">Skip to content</a>
+
+<!-- ── ALPHA BANNER ──────────────────────────────────── -->
+<div class="alpha-banner" role="alert">
+  <strong>⚠ Alpha release.</strong>
+  Tickwise is in active development. Expect rough edges, breaking
+  changes, and bugs. <strong>Not ready for production / billable use yet.</strong>
+  <a href="https://github.com/code-lodge/tickwise/issues" target="_blank" rel="noopener">Report issues →</a>
+</div>
 
 <!-- ── NAV ───────────────────────────────────────────── -->
 <header class="cl-nav">
@@ -185,7 +217,8 @@
 
 <!-- ── HERO ──────────────────────────────────────────── -->
 <section class="cl-shell hero">
-  <span class="cl-pill cl-pill-good"><span class="cl-pill-dot"></span> 100% LOCAL · NO LLM · NO API KEY</span>
+  <span class="cl-pill cl-pill-warn"><span class="cl-pill-dot"></span> ALPHA · NOT PRODUCTION READY</span>
+  <span class="cl-pill cl-pill-good" style="margin-left:.4rem"><span class="cl-pill-dot"></span> 100% LOCAL · NO LLM · NO API KEY</span>
   <h1 style="margin-top:1.4rem">Time tracking that<br/><span class="cl-accent-text">stays on your laptop.</span></h1>
   <p class="subtitle">
     Tickwise watches the active window, asks your browser for the exact tab URL, and
@@ -471,6 +504,10 @@ SE-website</pre>
     <span class="cl-section-label">Download</span>
     <h2>One file.<br/><span class="cl-accent-text">Double-click to run.</span></h2>
     <p class="cl-section-sub">Tickwise ships as a self-contained tray app. No Python install required, no Node.js, no Docker. The dashboard is bundled inside the binary.</p>
+    <p class="cl-section-sub" style="color: var(--cl-accent-warm); margin-top: .75rem; font-weight: 500">
+      ⚠ Alpha build — try it, tinker with it, file bugs.
+      Don't bet a client invoice on it just yet.
+    </p>
   </div>
   <div class="download-grid">
     <article class="cl-card platform">
